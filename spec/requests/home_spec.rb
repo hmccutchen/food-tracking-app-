@@ -6,11 +6,12 @@ RSpec.describe "Home" do
     expect(response).to redirect_to(new_session_path)
   end
 
-  it "shows the home page once signed in" do
+  it "sends the signed-in nurse to her patients" do
     user = create(:user)
     sign_in(user)
     get root_path
-    expect(response).to have_http_status(:ok)
+    expect(response).to redirect_to(patients_path)
+    follow_redirect!
     expect(response.body).to include(user.email_address)
   end
 end

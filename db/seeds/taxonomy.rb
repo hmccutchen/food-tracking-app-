@@ -1,9 +1,13 @@
 # Ingredient taxonomy: the FDA top 9 allergens, common intolerances, and
 # ambiguous label terms. Loaded by Taxonomy::Seed.load! (db/seeds.rb and specs).
 #
-# Each entry: "name" => { kind:, aliases: [], children: {} }. kind defaults to
-# :ingredient. Names and aliases are normalized on save, and every alias must be
-# unique across the whole tree.
+# Each entry: "name" => { kind:, aliases: [], children: {}, members: [] }. kind
+# defaults to :ingredient. Names and aliases are normalized on save, and every
+# alias must be unique across the whole tree.
+#
+# A node has exactly one tree parent. `members:` lists nodes that live elsewhere
+# in the tree but also belong to this group (soy sauce stays under soy and is a
+# member of sodium). Members must be defined somewhere in TREE.
 #
 # Peanut is a legume, not a tree nut: it is its own top-level allergen, and
 # "nuts" / "no nuts" resolve to tree nut only.
@@ -14,7 +18,10 @@ module TaxonomySeedData
       aliases: [ "dairy", "milk products", "cow's milk", "cows milk", "milk solids" ],
       children: {
         "butter" => { aliases: [ "butterfat", "butter oil" ] },
-        "cheese" => { aliases: [ "cheddar", "mozzarella", "parmesan", "cream cheese", "cottage cheese", "ricotta" ] },
+        "cheese" => {
+          aliases: [ "cheddar", "mozzarella", "cream cheese", "cottage cheese", "ricotta" ],
+          children: { "parmesan" => { aliases: [ "parmigiano", "parmigiano reggiano" ] } }
+        },
         "cream" => { aliases: [ "heavy cream", "sour cream", "half and half", "ice cream", "whipped cream" ] },
         "whey" => { aliases: [ "whey protein", "whey powder" ] },
         "casein" => { aliases: [ "caseinate", "sodium caseinate", "calcium caseinate" ] },
@@ -127,6 +134,50 @@ module TaxonomySeedData
         "stock" => { aliases: [ "broth", "bouillon" ] },
         "seasoning" => { aliases: [ "seasoning blend", "seasoning mix" ] }
       }
+    },
+    "cured meat" => {
+      aliases: [ "processed meat", "deli meat", "lunch meat", "salami", "prosciutto", "pepperoni" ],
+      children: {
+        "bacon" => { aliases: [ "pancetta" ] },
+        "ham" => {}
+      }
+    },
+    "pickles" => { aliases: [ "pickle", "dill pickle", "gherkin" ] },
+    "olives" => { aliases: [ "olive", "kalamata olive" ] },
+    "banana" => {},
+    "potato" => { aliases: [ "potatoes", "french fries", "fries" ] },
+    "tomato" => { aliases: [ "tomatoes", "tomato sauce", "tomato paste" ] },
+    "orange" => { aliases: [ "orange juice" ] },
+    "avocado" => { aliases: [ "guacamole" ] },
+    "spinach" => {},
+    # Conditions. Nutrient groups resolve condition restrictions ("low sodium",
+    # "diabetic", "renal diet") through the same resolver.
+    #
+    # "salt" and "sugar" are aliases of their group rather than child nodes:
+    # the normalizer turns "no salt" into "salt" and "no sugar" into "sugar", and
+    # those must mean the whole group (soy sauce, honey...), not one ingredient.
+    "sodium" => {
+      kind: :nutrient,
+      aliases: [ "low sodium", "low salt", "salt restriction", "hypertension", "high blood pressure", "heart failure",
+                 "salt", "table salt", "sea salt", "kosher salt" ],
+      members: [ "soy sauce", "fish sauce", "stock", "cured meat", "bacon", "ham", "pickles", "olives", "parmesan" ]
+    },
+    "added sugar" => {
+      kind: :nutrient,
+      aliases: [ "low sugar", "diabetes", "diabetic", "sugar", "cane sugar", "brown sugar", "white sugar",
+                 "powdered sugar" ],
+      children: {
+        "honey" => {},
+        "maple syrup" => {},
+        "corn syrup" => { aliases: [ "high fructose corn syrup" ] },
+        "molasses" => {},
+        "agave" => { aliases: [ "agave nectar", "agave syrup" ] }
+      }
+    },
+    "potassium" => {
+      kind: :nutrient,
+      aliases: [ "low potassium", "renal diet", "kidney disease", "ckd", "chronic kidney disease" ],
+      members: [ "banana", "potato", "tomato", "orange", "avocado", "spinach" ]
     }
   }.freeze
 end

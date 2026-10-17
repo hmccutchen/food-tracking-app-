@@ -1,0 +1,14 @@
+<li>
+  <%= turbo_frame_tag dom_id(restriction) do %>
+    <strong><%= restriction.term %></strong>
+    <span class="match match-<%= restriction.match_type %>">(<%= restriction.match_reason %>)</span>
+    <% if restriction.note.present? %>
+      <br><small><%= restriction.note %></small>
+    <% end %>
+    <br>
+    <%= link_to "Edit", edit_patient_restriction_path(restriction.patient, restriction), aria: { label: "Edit #{restriction.term}" } %>
+    <%= button_to "Remove", patient_restriction_path(restriction.patient, restriction), method: :delete,
+          aria: { label: "Remove #{restriction.term}" },
+          form: { data: { turbo_confirm: "Remove #{restriction.term}?" }, style: "display:inline" } %>
+  <% end %>
+</li>

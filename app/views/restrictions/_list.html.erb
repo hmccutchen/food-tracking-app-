@@ -1,0 +1,17 @@
+<div id="restrictions">
+  <% groups = patient.restrictions_by_kind %>
+  <% if groups.values.all?(&:empty?) %>
+    <p>No restrictions yet.</p>
+  <% end %>
+  <% groups.each do |kind, restrictions| %>
+    <% next if restrictions.empty? %>
+    <section id="restrictions_<%= kind %>" aria-labelledby="heading_<%= kind %>">
+      <h3 id="heading_<%= kind %>"><%= Restriction::KIND_LABELS.fetch(kind).first %></h3>
+      <ul>
+        <% restrictions.each do |restriction| %>
+          <%= render "restrictions/restriction", restriction: restriction %>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+</div>

@@ -82,6 +82,52 @@ RSpec.describe TaxonomyNode do
     end
   end
 
+  describe "group membership" do
+    let!(:sodium) { create(:taxonomy_node, name: "sodium", kind: :nutrient) }
+    let!(:soy) { create(:taxonomy_node, name: "soy", kind: :allergen) }
+    let!(:soy_sauce) { create(:taxonomy_node, name: "soy sauce", parent: soy) }
+    let!(:tamari) { create(:taxonomy_node, name: "tamari", parent: soy_sauce) }
+    let!(:almond) { create(:taxonomy_node, name: "almond") }
+
+    before { TaxonomyMembership.create!(group: sodium, node: soy_sauce) }
+
+    it "covers a member and the member's descendants" do
+      expect(sodium.covers?(soy_sauce)).to be(true)
+      expect(sodium.covers?(tamari)).to be(true)
+    end
+
+    it "keeps the tree parent covering the member" do
+      expect(soy.covers?(soy_sauce)).to be(true)
+      expect(soy_sauce.parent).to eq(soy)
+    end
+
+    it "does not cover the member's ancestors or unrelated nodes" do
+      expect(sodium.covers?(soy)).to be(false)
+      expect(sodium.covers?(almond)).to be(false)
+      expect(soy_sauce.covers?(sodium)).to be(false)
+    end
+
+    it "covers members of a descendant group" do
+      heart = create(:taxonomy_node, name: "heart diet", kind: :nutrient)
+      sodium.update!(parent: heart)
+      expect(heart.covers?(tamari)).to be(true)
+    end
+
+    it "accepts the nutrient kind" do
+      expect(sodium).to be_nutrient
+    end
+
+    it "rejects a duplicate or self membership" do
+      expect(TaxonomyMembership.new(group: sodium, node: soy_sauce)).not_to be_valid
+      expect(TaxonomyMembership.new(group: sodium, node: sodium)).not_to be_valid
+    end
+
+    it "is removed when either node is deleted" do
+      TaxonomyNode.where(id: soy_sauce.id).delete_all
+      expect(TaxonomyMembership.count).to eq(0)
+    end
+  end
+
   describe TaxonomyAlias do
     subject { build(:taxonomy_alias) }
 

@@ -19,12 +19,21 @@ class TaxonomyNode < ApplicationRecord
     SELECT id FROM tree
   SQL
 
-  enum :kind, { allergen: "allergen", intolerance: "intolerance", ingredient: "ingredient", category: "category" },
+  enum :kind, { allergen: "allergen", intolerance: "intolerance", ingredient: "ingredient", category: "category",
+                 nutrient: "nutrient" },
     validate: true
 
   belongs_to :parent, class_name: "TaxonomyNode", optional: true, inverse_of: :children
   has_many :children, class_name: "TaxonomyNode", foreign_key: :parent_id, inverse_of: :parent, dependent: :nullify
   has_many :aliases, class_name: "TaxonomyAlias", dependent: :delete_all, inverse_of: :taxonomy_node
+  # Groups this node belongs to outside its tree (soy sauce → sodium).
+  has_many :memberships, class_name: "TaxonomyMembership", foreign_key: :node_id, dependent: :delete_all,
+    inverse_of: :node
+  has_many :groups, through: :memberships
+  # Nodes that belong to this group outside the tree (sodium → soy sauce).
+  has_many :member_links, class_name: "TaxonomyMembership", foreign_key: :group_id, dependent: :delete_all,
+    inverse_of: :group
+  has_many :members, through: :member_links, source: :node
 
   normalizes :name, with: ->(name) { Taxonomy::Normalizer.call(name) }
 
@@ -49,11 +58,16 @@ class TaxonomyNode < ApplicationRecord
   end
 
   # A "tree nut" restriction covers "almond": other is this node or one of its descendants.
+  # Group membership also counts: "sodium" covers "soy sauce" because soy sauce
+  # (or one of its ancestors) is a member of sodium or of one of sodium's descendants.
   def covers?(other)
     return false if other.nil? || id.nil?
     return true if other.id == id
 
-    other.self_and_ancestors.where(id:).exists?
+    chain = other.self_and_ancestors.unscope(:order)
+    chain.where(id:).exists? ||
+      TaxonomyMembership.where(node_id: chain.select(:id))
+        .where("group_id = :id OR group_id IN (#{DESCENDANTS_SQL})", id:).exists?
   end
 
   private
