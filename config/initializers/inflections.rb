@@ -14,3 +14,6 @@
 # ActiveSupport::Inflector.inflections(:en) do |inflect|
 #   inflect.acronym "RESTful"
 # end
+
+# app/models/ai/adapters/openai.rb defines Ai::Adapters::OpenAI.
+Rails.autoloaders.each { |autoloader| autoloader.inflector.inflect("openai" => "OpenAI") }

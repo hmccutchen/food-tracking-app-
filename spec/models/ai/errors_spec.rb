@@ -8,6 +8,8 @@ RSpec.describe Ai::Error do
       "Your Anthropic Claude account is out of credit or over its quota.",
       "Anthropic Claude is busy right now (rate limit). Wait a minute and try again.",
       "Anthropic Claude didn't answer in time. Try again.",
+      "Anthropic Claude sent back something we couldn't read. Trying again may help.",
+      "Pick a model for Anthropic Claude in AI settings.",
       "Something went wrong talking to Anthropic Claude."
     ])
   end

@@ -1,0 +1,49 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.anthropic.com/v1/messages
+    body:
+      encoding: UTF-8
+      string: '{"model":"claude-sonnet-4-5-20250929","messages":[{"role":"user","content":[{"type":"text","text":"Suggest
+        3 different meals for this request: Warm dinner for the patient and the patient,
+        something soft. the patient likes fish.\n\nLeave these out entirely. Do not
+        use them, or any ingredient that contains them or is made from them:\n- milk\n-
+        peanut\n- sodium\n\nAn earlier suggestion was dropped because it used these.
+        Do not use them either:\n- butter\n\nReply with JSON only, no other text,
+        in exactly this shape:\n{\"meals\":[{\"dish\":\"...\",\"ingredients\":[\"...\"],\"prep_notes\":[\"...\"]}]}\n\n-
+        \"dish\" is the meal''s name.\n- \"ingredients\" lists every ingredient, one
+        per array element. Name each one specifically, for example \"low-sodium soy
+        sauce\", not \"sauce\".\n- \"prep_notes\" are short preparation tips. Use
+        [] if there are none.\n"}]}],"stream":false,"max_tokens":64000,"output_config":{"format":{"type":"json_schema","schema":{"type":"object","properties":{"meals":{"type":"array","items":{"type":"object","properties":{"dish":{"type":"string"},"ingredients":{"type":"array","items":{"type":"string"}},"prep_notes":{"type":"array","items":{"type":"string"}}},"required":["dish","ingredients","prep_notes"],"additionalProperties":false}}},"required":["meals"],"additionalProperties":false}}}}'
+    headers:
+      X-Api-Key:
+      - "<ANTHROPIC_API_KEY>"
+      Anthropic-Version:
+      - '2023-06-01'
+      Content-Type:
+      - application/json
+  response:
+    status:
+      code: 401
+      message: Unauthorized
+    headers:
+      Content-Type:
+      - application/json
+      Request-Id:
+      - req_011CTxample0000000000001
+      Anthropic-Organization-Id:
+      - 00000000-0000-0000-0000-000000000000
+    body:
+      encoding: UTF-8
+      string: |-
+        {
+          "type": "error",
+          "error": {
+            "type": "authentication_error",
+            "message": "invalid x-api-key"
+          },
+          "request_id": "req_011CTxample0000000000002"
+        }
+  recorded_at: Fri, 16 Oct 2026 15:04:05 GMT
+recorded_with: VCR 6.4.0 (hand-authored, see spec/cassettes/README.md)

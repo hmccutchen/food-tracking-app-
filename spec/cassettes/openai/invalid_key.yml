@@ -1,0 +1,47 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.openai.com/v1/responses
+    body:
+      encoding: UTF-8
+      string: '{"model":"gpt-5-mini","input":[{"role":"user","content":"Suggest 3
+        different meals for this request: Warm dinner for the patient and the patient,
+        something soft. the patient likes fish.\n\nLeave these out entirely. Do not
+        use them, or any ingredient that contains them or is made from them:\n- milk\n-
+        peanut\n- sodium\n\nAn earlier suggestion was dropped because it used these.
+        Do not use them either:\n- butter\n\nReply with JSON only, no other text,
+        in exactly this shape:\n{\"meals\":[{\"dish\":\"...\",\"ingredients\":[\"...\"],\"prep_notes\":[\"...\"]}]}\n\n-
+        \"dish\" is the meal''s name.\n- \"ingredients\" lists every ingredient, one
+        per array element. Name each one specifically, for example \"low-sodium soy
+        sauce\", not \"sauce\".\n- \"prep_notes\" are short preparation tips. Use
+        [] if there are none.\n"}],"stream":false,"store":false,"include":["reasoning.encrypted_content"],"text":{"format":{"type":"json_schema","name":"meal_suggestions","schema":{"type":"object","properties":{"meals":{"type":"array","items":{"type":"object","properties":{"dish":{"type":"string"},"ingredients":{"type":"array","items":{"type":"string"}},"prep_notes":{"type":"array","items":{"type":"string"}}},"required":["dish","ingredients","prep_notes"],"additionalProperties":false}}},"required":["meals"],"additionalProperties":false},"strict":true}}}'
+    headers:
+      Authorization:
+      - Bearer <OPENAI_API_KEY>
+      Content-Type:
+      - application/json
+  response:
+    status:
+      code: 401
+      message: Unauthorized
+    headers:
+      Content-Type:
+      - application/json
+      Openai-Processing-Ms:
+      - '4123'
+      X-Request-Id:
+      - req_0f1e2d3c4b5a69788796a5b4c3d2e1f0
+    body:
+      encoding: UTF-8
+      string: |-
+        {
+          "error": {
+            "message": "Incorrect API key provided: sk-TEST*****************0003. You can find your API key at https://platform.openai.com/account/api-keys.",
+            "type": "invalid_request_error",
+            "param": null,
+            "code": "invalid_api_key"
+          }
+        }
+  recorded_at: Fri, 16 Oct 2026 15:04:05 GMT
+recorded_with: VCR 6.4.0 (hand-authored, see spec/cassettes/README.md)

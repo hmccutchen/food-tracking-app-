@@ -10,7 +10,10 @@ module Ai
 
     def self.code = "provider_error"
 
-    def self.classes = [ InvalidKeyError, QuotaExceededError, RateLimitError, TimeoutError, ProviderError ]
+    def self.classes
+      [ InvalidKeyError, QuotaExceededError, RateLimitError, TimeoutError, MalformedResponseError, ModelMissingError,
+        ProviderError ]
+    end
 
     # Rebuilds an error from a stored last_error_code, for display.
     def self.from_code(code, provider)
@@ -55,8 +58,21 @@ module Ai
     def plain_message = "#{provider_name} didn't answer in time. Try again."
   end
 
+  # The provider answered, but not with meals we could read (prose, broken
+  # JSON, wrong shape). Counted as a failed attempt by the caller.
+  class MalformedResponseError < Error
+    def self.code = "malformed_response"
+    def plain_message = "#{provider_name} sent back something we couldn't read. Trying again may help."
+  end
+
   # Fallback for 5xx, unreadable responses and anything unexpected.
   class ProviderError < Error; end
+
+  # No model picked yet. We never guess one, so this is fixed in AI settings.
+  class ModelMissingError < ProviderError
+    def self.code = "model_missing"
+    def plain_message = "Pick a model for #{provider_name} in AI settings."
+  end
 
   # Status + body => error class, per provider.
   ResponseClassifier = Struct.new(:provider, :status, :body) do
