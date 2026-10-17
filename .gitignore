@@ -1,0 +1,34 @@
+# See https://help.github.com/articles/ignoring-files for more about ignoring files.
+
+/.bundle
+/.env*
+
+/log/*
+/tmp/*
+!/log/.keep
+!/tmp/.keep
+
+/tmp/pids/*
+!/tmp/pids/
+!/tmp/pids/.keep
+
+/storage/*
+!/storage/.keep
+/tmp/storage/*
+!/tmp/storage/
+!/tmp/storage/.keep
+
+/public/assets
+
+# Never commit the master key or local USDA data dumps.
+/config/master.key
+/config/credentials/*.key
+/db/usda/*
+!/db/usda/.keep
+
+/coverage
+/spec/examples.txt
+
+# Ignore key files for decrypting credentials and more.
+/config/*.key
+
