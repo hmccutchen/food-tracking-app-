@@ -33,6 +33,15 @@ class Restriction < ApplicationRecord
 
   def manual? = match_type == "manual"
 
+  # Runs the resolver again, dropping any manual match (used when the
+  # taxonomy changes under the restriction, e.g. a custom item is added or
+  # deleted). Saves, and so bumps the profile version, only if the match changed.
+  def re_resolve!
+    self.match_type = "unresolved" if manual?
+    assign_resolution
+    save! if changed?
+  end
+
   # The form preselects the node only when the nurse picked it herself.
   def manual_node_id
     @manual_node_choice_given ? super : (taxonomy_node_id if manual?)

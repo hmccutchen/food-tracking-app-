@@ -82,8 +82,10 @@ module Evaluation
         end
       end
 
+      # In the ambiguous group by tree or by membership (a custom item whose
+      # ingredient text lists "natural flavors").
       def ambiguous?(ingredient_node)
-        !@ambiguous_id.nil? && !ingredient_node.nil? && coverers(ingredient_node.id).first.include?(@ambiguous_id)
+        !@ambiguous_id.nil? && !ingredient_node.nil? && coverers(ingredient_node.id).any? { |set| set.include?(@ambiguous_id) }
       end
 
       private

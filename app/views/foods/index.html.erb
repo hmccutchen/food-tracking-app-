@@ -23,4 +23,8 @@
       <% end %>
     </ul>
   <% end %>
+  <% if @query.present? %>
+    <p class="not-found">Not here?
+      <%= link_to "Add it as a custom item", new_custom_item_path(name: @query), data: { turbo_frame: "_top" } %></p>
+  <% end %>
 <% end %>

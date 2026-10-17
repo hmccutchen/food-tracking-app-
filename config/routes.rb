@@ -5,6 +5,9 @@ Rails.application.routes.draw do
     resources :restrictions, only: %i[create edit update destroy]
   end
   resources :foods, only: :index
+  resources :custom_items, path: "custom-items" do
+    patch :marks, on: :member
+  end
   resource :group, only: :show do
     post :check
   end

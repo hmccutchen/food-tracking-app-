@@ -23,6 +23,11 @@ class TaxonomyNode < ApplicationRecord
                  nutrient: "nutrient" },
     validate: true
 
+  # "seed" nodes come from db/seeds/taxonomy.rb; "custom" ones are items the
+  # nurse added herself (CustomItem). The seed loader never changes custom ones.
+  SOURCES = %w[seed custom].freeze
+
+  belongs_to :created_by, class_name: "User", optional: true
   belongs_to :parent, class_name: "TaxonomyNode", optional: true, inverse_of: :children
   has_many :children, class_name: "TaxonomyNode", foreign_key: :parent_id, inverse_of: :parent, dependent: :nullify
   has_many :aliases, class_name: "TaxonomyAlias", dependent: :delete_all, inverse_of: :taxonomy_node
@@ -35,13 +40,19 @@ class TaxonomyNode < ApplicationRecord
     inverse_of: :group
   has_many :members, through: :member_links, source: :node
 
+  scope :custom, -> { where(source: "custom") }
+  scope :seeded, -> { where(source: "seed") }
+
   normalizes :name, with: ->(name) { Taxonomy::Normalizer.call(name) }
 
   before_validation { self.slug = name.to_s.parameterize }
 
   validates :name, presence: true, uniqueness: true
   validates :slug, presence: true, uniqueness: true
+  validates :source, inclusion: { in: SOURCES }
   validate :parent_is_not_self_or_descendant
+
+  def custom? = source == "custom"
 
   # Nearest first: [self, parent, grandparent, ...]
   def self_and_ancestors

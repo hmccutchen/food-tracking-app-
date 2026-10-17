@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_18_000031) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_18_000040) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -134,11 +134,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_000031) do
     t.bigint "parent_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "source", default: "seed", null: false
+    t.bigint "created_by_id"
+    t.text "ingredients_text"
+    t.index ["created_by_id"], name: "index_taxonomy_nodes_on_created_by_id"
     t.index ["kind"], name: "index_taxonomy_nodes_on_kind"
     t.index ["name"], name: "index_taxonomy_nodes_on_name", unique: true
     t.index ["name"], name: "index_taxonomy_nodes_on_name_trgm", opclass: :gin_trgm_ops, using: :gin
     t.index ["parent_id"], name: "index_taxonomy_nodes_on_parent_id"
     t.index ["slug"], name: "index_taxonomy_nodes_on_slug", unique: true
+    t.index ["source"], name: "index_taxonomy_nodes_on_source"
   end
 
   create_table "users", force: :cascade do |t|
@@ -162,4 +167,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_000031) do
   add_foreign_key "taxonomy_memberships", "taxonomy_nodes", column: "group_id", on_delete: :cascade
   add_foreign_key "taxonomy_memberships", "taxonomy_nodes", column: "node_id", on_delete: :cascade
   add_foreign_key "taxonomy_nodes", "taxonomy_nodes", column: "parent_id", on_delete: :nullify
+  add_foreign_key "taxonomy_nodes", "users", column: "created_by_id", on_delete: :nullify
 end

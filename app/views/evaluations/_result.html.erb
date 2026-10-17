@@ -1,6 +1,8 @@
 <%# Reusable result card body (M11 meal cards render it too). result is an
     Evaluation::GroupResult; patients maps patient_id to a display name or Patient. %>
-<%# locals: (result:, patients: {}, prep_notes: [], cross_contact: nil) %>
+<%# locals: (result:, patients: {}, prep_notes: [], cross_contact: nil, custom_item_links: true) %>
+<%# custom_item_links: next to each UNKNOWN flag for an unrecognized ingredient,
+    link to "Add as custom item" prefilled with that ingredient. %>
 <%# prep_notes (PrepNotes::Note) and cross_contact are advisory: shown under the
     tier, never part of it. %>
 <div class="evaluation-result" data-tier="<%= result.tier %>">
@@ -36,7 +38,12 @@
       <% if patient_result.active_flags.any? %>
         <ul class="flags">
           <% patient_result.active_flags.each do |flag| %>
-            <li data-tier="<%= flag.tier %>"><%= tier_label(flag.tier) %>: <%= flag.reason %></li>
+            <li data-tier="<%= flag.tier %>"><%= tier_label(flag.tier) %>: <%= flag.reason %>
+              <% if custom_item_links && flag.source == :unresolved && flag.ingredient.present? %>
+                <%= link_to "Add as custom item", new_custom_item_path(name: flag.ingredient),
+                      class: "add-custom-item", data: { turbo_frame: "_top" } %>
+              <% end %>
+            </li>
           <% end %>
         </ul>
       <% end %>
