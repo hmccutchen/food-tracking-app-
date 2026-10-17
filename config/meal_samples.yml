@@ -1,0 +1,61 @@
+# Fixed sample requests for `rake meals:samples[provider]` (M9). Synthetic
+# profiles only: patient labels are "Sample A", "Sample B"…, never real names.
+# Restriction kinds: allergy, intolerance, condition, cannot, can.
+samples:
+  - key: dinner_wheat_dairy_sodium
+    request: "dinner, no wheat, no dairy, low sodium"
+    patients:
+      - label: Sample A
+        allergy: [ wheat ]
+        intolerance: [ lactose ]
+        condition: [ low sodium ]
+
+  - key: breakfast_tree_nut_diabetic
+    request: "breakfast for two"
+    patients:
+      - label: Sample A
+        allergy: [ tree nut ]
+      - label: Sample B
+        condition: [ diabetic ]
+
+  - key: lunch_shellfish_soy
+    request: "lunch"
+    patients:
+      - label: Sample A
+        allergy: [ shellfish, soy ]
+
+  - key: soft_renal
+    request: "soft foods, easy to chew"
+    patients:
+      - label: Sample A
+        condition: [ low potassium ]
+
+  - key: kid_egg_sesame
+    request: "kid-friendly dinner"
+    patients:
+      - label: Sample A
+        allergy: [ egg, sesame ]
+
+  - key: vegetarian_peanut_mushroom
+    request: "vegetarian-ish dinner"
+    patients:
+      - label: Sample A
+        allergy: [ peanut ]
+        cannot: [ mushrooms ]
+
+  - key: three_milk_gluten_sodium
+    request: "dinner for three"
+    patients:
+      - label: Sample A
+        allergy: [ milk ]
+      - label: Sample B
+        intolerance: [ gluten ]
+      - label: Sample C
+        condition: [ low sodium ]
+
+  - key: snack_grapefruit
+    request: "quick snack"
+    patients:
+      - label: Sample A
+        cannot: [ grapefruit ]
+        note: "medication interaction"

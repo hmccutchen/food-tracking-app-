@@ -3,6 +3,12 @@ module Ai
   # Model names are never listed here: they come from the provider's own
   # list-models response and the nurse picks one.
   module Providers
+    # OpenAI's list-models also returns embedding, audio, image, moderation
+    # and legacy completion models, none of which can answer a chat prompt.
+    # They are left out of the picker; a model this misses can still be typed
+    # into the free-text "other model" field.
+    OPENAI_NON_CHAT = /embedding|whisper|tts|dall-e|davinci|babbage|moderation|transcribe|audio|realtime|image|search/i
+
     Provider = Data.define(:key, :name, :models_url, :key_hint, :auth, :model_parser) do
       # Headers that carry the key. Built per request; never interpolated into
       # errors or logs.
@@ -39,7 +45,9 @@ module Ai
         models_url: "https://api.openai.com/v1/models",
         key_hint: "Usually starts with “sk-”. Create one in the OpenAI dashboard.",
         auth: ->(api_key) { { "Authorization" => "Bearer #{api_key}" } },
-        model_parser: ->(json) { Array(json["data"]).map { |m| m["id"].presence } }
+        model_parser: lambda { |json|
+          Array(json["data"]).map { |m| m["id"].presence }.reject { |id| id.nil? || id.match?(OPENAI_NON_CHAT) }
+        }
       )
     ].index_by(&:key).freeze
 
