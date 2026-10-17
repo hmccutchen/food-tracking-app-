@@ -10,3 +10,7 @@
  */
 
 body { font-family: system-ui, sans-serif; line-height: 1.45; margin: 0 auto; max-width: 48rem; padding: 0 1rem; }
+
+.provider-card { border: 1px solid #ccc; border-radius: 6px; margin: 1rem 0; padding: 0 1rem 1rem; }
+.alert { color: #8a1c1c; }
+.privacy-note { background: #f4f4f4; padding: .5rem; }

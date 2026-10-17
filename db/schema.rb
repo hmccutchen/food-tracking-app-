@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_18_000020) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_18_000031) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -67,6 +67,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_000020) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_prep_methods_on_name", unique: true
+  end
+
+  create_table "provider_credentials", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "provider", null: false
+    t.text "api_key", null: false
+    t.string "key_last4", null: false
+    t.string "model"
+    t.jsonb "available_models", default: [], null: false
+    t.datetime "validated_at"
+    t.string "last_error_code"
+    t.datetime "last_checked_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "provider"], name: "index_provider_credentials_on_user_id_and_provider", unique: true
   end
 
   create_table "restrictions", force: :cascade do |t|
@@ -131,6 +146,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_000020) do
     t.string "password_digest", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "active_provider"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
@@ -138,6 +154,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_000020) do
   add_foreign_key "patients", "users"
   add_foreign_key "prep_method_risks", "prep_methods", on_delete: :cascade
   add_foreign_key "prep_method_risks", "taxonomy_nodes", on_delete: :cascade
+  add_foreign_key "provider_credentials", "users", on_delete: :cascade
   add_foreign_key "restrictions", "patients", on_delete: :cascade
   add_foreign_key "restrictions", "taxonomy_nodes", on_delete: :nullify
   add_foreign_key "sessions", "users"
