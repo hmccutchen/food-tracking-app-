@@ -139,6 +139,65 @@ RSpec.describe Taxonomy::Resolver do
     end
   end
 
+  describe "phrase scan (contained)" do
+    def contained(text) = resolver.resolve(text).contained.map { |found, phrase| [ found.name, phrase ] }
+
+    {
+      "toasted sliced almonds" => [ [ "almond", "almonds" ] ],
+      "roasted almonds" => [ [ "almond", "almonds" ] ],
+      "almond-crusted tilapia" => [ [ "almond", "almond" ], [ "tilapia", "tilapia" ] ],
+      "egg noodles" => [ [ "egg", "egg" ] ],
+      "grated parmesan cheese" => [ [ "parmesan", "parmesan" ], [ "cheese", "cheese" ] ],
+      "low-sodium soy sauce" => [ [ "sodium", "low-sodium" ], [ "soy sauce", "soy sauce" ] ],
+      "shrimp stock" => [ [ "shrimp", "shrimp" ], [ "stock", "stock" ] ],
+      "peanut butter cookies" => [ [ "peanut", "peanut butter" ] ],
+      "butter lettuce" => [ [ "butter", "butter" ] ],
+      "all-purpose flour blend" => [ [ "flour", "all-purpose flour" ] ],
+      "chopped xyzzy" => []
+    }.each do |text, expected|
+      it "finds #{expected.map(&:first).inspect} in #{text.inspect}" do
+        expect(contained(text)).to eq(expected)
+      end
+    end
+
+    it "only scans when the whole phrase is fuzzy or unresolved" do
+      expect(resolver.resolve("roasted almonds")).to be_unresolved
+      expect(resolver.resolve("low-sodium soy sauce")).to be_fuzzy
+      %w[almond\ milk soy\ sauce fish\ sauce peanut\ butter Butter].each do |text|
+        result = resolver.resolve(text)
+        expect(result.match_type).to be_in(%i[exact alias])
+        expect(result.contained).to eq([])
+      end
+    end
+
+    it "uses no fuzzy matching inside the scan" do
+      expect(contained("roastd almnds")).to eq([])
+    end
+
+    it "takes the longest match and never overlaps (peanut butter, not butter)" do
+      expect(contained("peanut butter cookies").map(&:first)).not_to include("butter")
+    end
+
+    it "lists each node once" do
+      expect(contained("shredded cheddar cheese")).to eq([ [ "cheese", "cheddar" ] ])
+    end
+
+    it "adds no queries for the scan: the batched lookups plus the fuzzy ones" do
+      phrases = [ "toasted sliced almonds with a little extra sea salt", "low-sodium soy sauce", "egg noodles",
+        "grated parmesan cheese", "milk", "almond flour" ]
+      queries = 0
+      counter = ->(*, payload) { queries += 1 unless payload[:name] == "SCHEMA" }
+      results = nil
+      ActiveSupport::Notifications.subscribed(counter, "sql.active_record") { results = resolver.resolve_all(phrases) }
+
+      loose = results.count { |result| !result.match_type.in?(%i[exact alias]) }
+      expect(loose).to eq(4)
+      # nodes, aliases, alias nodes; then two fuzzy queries per loose phrase.
+      expect(queries).to eq(3 + (2 * loose))
+      expect(results.first.contained.map { |found, _| found.name }).to eq([ "almond", "sodium" ])
+    end
+  end
+
   describe "coverage" do
     it "covers dairy and gluten families" do
       { "gluten" => %w[wheat barley rye malt flour], "milk" => %w[lactose whey butter cheese],

@@ -30,7 +30,23 @@ restrictions is checked against it.
 | Any restriction covers the ingredient, but the ingredient was a **fuzzy** match | possible_conflict | "fuzzy match to almond — check the label" |
 | Ingredient is in the ambiguous group (natural flavors, spices, stock…) and the patient has any allergy, intolerance or cannot | possible_conflict | "'natural flavors' listed — may hide allergens" |
 | Ingredient is **unresolved** | unknown | "'xyz' not recognized" |
+| Ingredient is a **fuzzy** match and the phrase scan found nothing known inside it | unknown | "'peanutt' only loosely matches peanut — check the label" |
 | The dish has **no ingredient list** | unknown | "no ingredient list found" |
+
+### Phrases that contain a known ingredient
+
+AI and recipe ingredients are usually phrases ("roasted almonds", "egg noodles",
+"low-sodium soy sauce"). If the whole phrase resolves by exact, alias or manual match,
+that node alone is used. "Almond milk" is an alias of almond, so it is not milk.
+
+Otherwise, when the phrase is fuzzy or unresolved, the phrase is also **scanned** for
+known names and aliases. The scan splits on spaces and hyphens, tries singular forms and
+takes the longest matches first, without overlaps. That way "peanut butter cookies"
+finds peanut and not butter. Each node it finds is checked like a directly listed
+ingredient, at that restriction kind's normal tier. The reason reads "'soy sauce'
+appears in 'low-sodium soy sauce'". The fuzzy and unknown flags for the whole phrase
+are kept as well. A false positive such as "butter lettuce" is acceptable, because
+worst case wins. The fix for one is to add an alias, never to loosen the scan.
 
 A restriction whose own term was unresolved (no taxonomy node) falls back to text
 matching. The normalized restriction term is compared against the normalized ingredient

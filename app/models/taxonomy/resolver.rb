@@ -1,6 +1,8 @@
 module Taxonomy
   # Maps free-text ingredient or restriction terms to taxonomy nodes:
   # exact node name, then exact alias, then trigram fuzzy match, else unresolved.
+  # A fuzzy or unresolved phrase is also scanned for known names and aliases
+  # inside it (see PhraseScan), so "roasted almonds" still finds almond.
   class Resolver
     FUZZY_THRESHOLD = 0.4
 
@@ -10,7 +12,9 @@ module Taxonomy
 
     def resolve_all(texts)
       inputs = Array(texts).map { |text| [ text, Normalizer.call(text) ] }
-      terms = inputs.flat_map { |_, normalized| Normalizer.candidates(normalized) }.uniq.compact_blank
+      # Whole-phrase candidates and every scan n-gram go into the same two queries.
+      terms = inputs.flat_map { |_, normalized| Normalizer.candidates(normalized) + PhraseScan.terms(normalized) }
+        .uniq.compact_blank
       nodes = TaxonomyNode.where(name: terms).index_by(&:name)
       aliases = TaxonomyAlias.includes(:taxonomy_node).where(term: terms).index_by(&:term)
 
@@ -27,10 +31,11 @@ module Taxonomy
       return unresolved(text, normalized, "empty ingredient") if normalized.blank?
 
       candidates = Normalizer.candidates(normalized)
-      exact(text, normalized, candidates, nodes) ||
-        aliased(text, normalized, candidates, aliases) ||
-        fuzzy(text, normalized) ||
-        unresolved(text, normalized, "'#{text.to_s.strip}' not recognized")
+      direct = exact(text, normalized, candidates, nodes) || aliased(text, normalized, candidates, aliases)
+      return direct if direct
+
+      loose = fuzzy(text, normalized) || unresolved(text, normalized, "'#{text.to_s.strip}' not recognized")
+      loose.with(contained: PhraseScan.find(normalized, nodes, aliases))
     end
 
     def exact(text, normalized, candidates, nodes)

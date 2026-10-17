@@ -50,6 +50,16 @@ module TaxonomySeedData
         "cod" => { aliases: [ "codfish" ] },
         "salmon" => { aliases: [ "smoked salmon", "lox" ] },
         "tuna" => { aliases: [ "canned tuna" ] },
+        "tilapia" => {},
+        "trout" => {},
+        "halibut" => {},
+        "sardine" => {},
+        "mackerel" => {},
+        "catfish" => {},
+        "haddock" => {},
+        "pollock" => {},
+        "snapper" => {},
+        "mahi mahi" => {},
         "fish sauce" => { aliases: [ "nam pla", "nuoc mam" ] }
       }
     },
