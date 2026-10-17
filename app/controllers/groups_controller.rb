@@ -15,12 +15,16 @@ class GroupsController < ApplicationController
   def check
     load_group
     @ingredients_text = params[:ingredients].to_s
-    @result = Evaluation::Engine.new(@selected).evaluate(parse_ingredients(@ingredients_text))
+    ingredients = parse_ingredients(@ingredients_text)
+    @result = Evaluation::Engine.new(@selected).evaluate(ingredients)
+    # Advisory only, computed apart from the result: never part of the tier.
+    @prep_notes = PrepNotes.for(patients: @selected, dish: nil, ingredients:)
+    @cross_contact = PrepNotes.cross_contact_line(@selected)
 
     respond_to do |format|
       format.turbo_stream do
         render turbo_stream: turbo_stream.update("evaluation_result", partial: "evaluations/result",
-          locals: { result: @result, patients: @names })
+          locals: { result: @result, patients: @names, prep_notes: @prep_notes, cross_contact: @cross_contact })
       end
       format.html { render :show }
     end

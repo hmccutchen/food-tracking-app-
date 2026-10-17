@@ -29,6 +29,7 @@
         <%= link_to "Patients", patients_path %>
         · <%= link_to "Foods", foods_path %>
         · <%= link_to "Who's eating", group_path %>
+        · <%= link_to "Preparation notes", prep_methods_path %>
         · Signed in as <%= Current.user.email_address %>
         <%= button_to "Sign out", session_path, method: :delete, form: { style: "display:inline" } %>
       </nav>

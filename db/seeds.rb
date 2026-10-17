@@ -13,3 +13,6 @@ elsif !User.exists?(email_address: email)
 end
 
 Taxonomy::Seed.load!
+
+require Rails.root.join("db/seeds/prep_methods").to_s
+PrepMethodSeedData.load!

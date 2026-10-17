@@ -41,7 +41,10 @@
         <p><%= form.submit "Check", name: nil %></p>
       <% end %>
       <div id="evaluation_result" aria-live="polite">
-        <%= render "evaluations/result", result: @result, patients: @names if @result %>
+        <% if @result %>
+          <%= render "evaluations/result", result: @result, patients: @names, prep_notes: @prep_notes,
+                cross_contact: @cross_contact %>
+        <% end %>
       </div>
     </section>
   <% end %>

@@ -1,0 +1,7 @@
+/* Advisory preparation notes, the cross-contact reminder, and their edit page. */
+.cross-contact { border-left: 4px solid #555; font-weight: bold; padding-left: 0.5rem; }
+.prep-note { background: #f6f6f2; border: 1px solid #ccc; border-radius: 0.3rem; margin: 0.5rem 0; padding: 0.25rem 0.75rem; }
+.prep-note-label { font-size: 0.9em; margin-bottom: 0.2rem; }
+.prep-note-terms, .lower-risk { color: #444; font-size: 0.95em; }
+.prep-note .dismiss { margin-bottom: 0.5rem; }
+.prep-methods-table td, .prep-methods-table th { border-bottom: 1px solid #ddd; padding: 0.3rem; text-align: left; vertical-align: top; }

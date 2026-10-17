@@ -1,0 +1,41 @@
+<% content_for :title, "Edit preparation note" %>
+<h1>Edit preparation note: <%= @prep_method.name_was.presence || @prep_method.name %></h1>
+
+<%= form_with model: @prep_method do |form| %>
+  <%= render "shared/errors", record: @prep_method %>
+
+  <p>
+    <%= form.label :name, "Method name" %><br>
+    <%= form.text_field :name, required: true %>
+  </p>
+  <p>
+    <%= form.label :keywords_text, "Keywords (separated by commas; whole words only)" %><br>
+    <%= form.text_area :keywords_text, rows: 2 %>
+  </p>
+  <p>
+    <%= form.label :risk, "Why it's a risk" %><br>
+    <%= form.text_area :risk, rows: 2, required: true %>
+  </p>
+  <p>
+    <%= form.label :lower_risk_method, "Lower-risk method" %><br>
+    <%= form.text_field :lower_risk_method, required: true %>
+  </p>
+  <p>
+    <%= form.label :caveat, "Caveat (shown after the lower-risk method)" %><br>
+    <%= form.text_field :caveat, required: true %>
+  </p>
+  <p>
+    <%= form.label :risk_node_ids, "Risk ingredients (hold Ctrl or Cmd to pick several)" %><br>
+    <%= form.collection_select :risk_node_ids, TaxonomyNode.order(:name), :id, :name, {},
+          multiple: true, size: 12 %>
+  </p>
+  <p>
+    <%= form.label :position, "Order" %>
+    <%= form.number_field :position, min: 0 %>
+  </p>
+  <p>
+    <%= form.check_box :active %>
+    <%= form.label :active, "Show this note" %>
+  </p>
+  <p><%= form.submit "Save" %> <%= link_to "Cancel", prep_methods_path %></p>
+<% end %>

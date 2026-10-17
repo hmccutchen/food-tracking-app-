@@ -1,11 +1,25 @@
 <%# Reusable result card body (M11 meal cards render it too). result is an
     Evaluation::GroupResult; patients maps patient_id to a display name or Patient. %>
-<%# locals: (result:, patients: {}) %>
+<%# locals: (result:, patients: {}, prep_notes: [], cross_contact: nil) %>
+<%# prep_notes (PrepNotes::Note) and cross_contact are advisory: shown under the
+    tier, never part of it. %>
 <div class="evaluation-result" data-tier="<%= result.tier %>">
   <% if result.stale? %>
     <p class="stale" role="alert">Out of date — re-check</p>
   <% end %>
   <p class="overall">Overall: <%= tier_badge(result.tier) %></p>
+  <% if cross_contact.present? %>
+    <p class="cross-contact"><%= cross_contact %></p>
+  <% end %>
+  <% prep_notes.each do |note| %>
+    <aside class="prep-note" data-controller="dismiss" data-dismiss-key-value="<%= note.key %>"
+           aria-label="Preparation note (advisory): <%= note.method_name %>">
+      <p class="prep-note-label">Preparation note (advisory): <strong><%= note.method_name %></strong></p>
+      <p><%= note.risk %> <span class="prep-note-terms">Relevant to: <%= note.terms.to_sentence %>.</span></p>
+      <p class="lower-risk"><%= note.lower_risk_line %></p>
+      <button type="button" class="dismiss" data-action="dismiss#dismiss">Dismiss note</button>
+    </aside>
+  <% end %>
   <% if result.patient_results.empty? %>
     <p><%= result.summary %></p>
   <% end %>

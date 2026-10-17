@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_18_000010) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_18_000020) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -44,6 +44,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_000010) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_patients_on_user_id"
+  end
+
+  create_table "prep_method_risks", force: :cascade do |t|
+    t.bigint "prep_method_id", null: false
+    t.bigint "taxonomy_node_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["prep_method_id", "taxonomy_node_id"], name: "index_prep_method_risks_on_prep_method_id_and_taxonomy_node_id", unique: true
+    t.index ["prep_method_id"], name: "index_prep_method_risks_on_prep_method_id"
+    t.index ["taxonomy_node_id"], name: "index_prep_method_risks_on_taxonomy_node_id"
+  end
+
+  create_table "prep_methods", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "keywords", default: [], null: false, array: true
+    t.text "risk", null: false
+    t.text "lower_risk_method", null: false
+    t.text "caveat", null: false
+    t.integer "position", default: 0, null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_prep_methods_on_name", unique: true
   end
 
   create_table "restrictions", force: :cascade do |t|
@@ -113,6 +136,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_000010) do
 
   add_foreign_key "foods", "taxonomy_nodes", on_delete: :nullify
   add_foreign_key "patients", "users"
+  add_foreign_key "prep_method_risks", "prep_methods", on_delete: :cascade
+  add_foreign_key "prep_method_risks", "taxonomy_nodes", on_delete: :cascade
   add_foreign_key "restrictions", "patients", on_delete: :cascade
   add_foreign_key "restrictions", "taxonomy_nodes", on_delete: :nullify
   add_foreign_key "sessions", "users"

@@ -8,6 +8,7 @@ Rails.application.routes.draw do
   resource :group, only: :show do
     post :check
   end
+  resources :prep_methods, only: %i[index edit update], path: "preparation-notes"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

@@ -1,0 +1,31 @@
+<% content_for :title, "Preparation notes" %>
+<h1>Preparation notes</h1>
+<p>
+  These notes appear under a result when a dish, prep note or ingredient mentions one of the
+  keywords and a selected patient has a restriction covering one of the risk ingredients.
+  They are advisory: they never change a result.
+</p>
+
+<table class="prep-methods-table">
+  <thead>
+    <tr><th>Method</th><th>Keywords</th><th>Risks</th><th>Shown</th><th></th></tr>
+  </thead>
+  <tbody>
+    <% @prep_methods.each do |prep_method| %>
+      <tr id="<%= dom_id(prep_method) %>">
+        <td>
+          <strong><%= prep_method.name %></strong><br>
+          <%= prep_method.risk %><br>
+          <span class="lower-risk"><%= prep_method.lower_risk_line %></span>
+        </td>
+        <td><%= prep_method.keywords.join(", ") %></td>
+        <td><%= prep_method.risk_nodes.map(&:name).sort.join(", ").presence || "none" %></td>
+        <td><%= prep_method.active? ? "Yes" : "No (turned off)" %></td>
+        <td><%= link_to "Edit", edit_prep_method_path(prep_method), aria: { label: "Edit #{prep_method.name}" } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+<% if @prep_methods.empty? %>
+  <p>No preparation notes yet. Run <code>bin/rails db:seed</code> to load the defaults.</p>
+<% end %>
