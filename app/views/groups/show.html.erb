@@ -1,0 +1,48 @@
+<% content_for :title, "Who's eating?" %>
+<h1>Who's eating?</h1>
+
+<% if @patients.empty? %>
+  <p>No patients yet. <%= link_to "Add a patient", new_patient_path %> first.</p>
+<% else %>
+  <%= form_with url: group_path, method: :get, id: "group_selection",
+        data: { turbo_frame: "avoid_list", turbo_action: "advance", controller: "auto-submit" } do |form| %>
+    <fieldset>
+      <legend>Pick the patients eating together</legend>
+      <%# Always sent, so clearing every box is remembered as "nobody". %>
+      <%= hidden_field_tag "patient_ids[]", "", id: nil %>
+      <ul class="patient-picker">
+        <% @patients.each do |patient| %>
+          <li>
+            <%= check_box_tag "patient_ids[]", patient.id, @selected.include?(patient), id: dom_id(patient, :select),
+                  data: { action: "change->auto-submit#submit" } %>
+            <%= label_tag dom_id(patient, :select), patient.display_name %>
+          </li>
+        <% end %>
+      </ul>
+    </fieldset>
+    <%= form.submit "Update", name: nil, data: { auto_submit_target: "button" } %>
+  <% end %>
+<% end %>
+
+<%= turbo_frame_tag "avoid_list" do %>
+  <%= render "groups/avoid_list", avoid_list: @avoid_list %>
+
+  <% if @selected.any? %>
+    <section id="check_ingredients" aria-labelledby="check_ingredients_heading">
+      <h2 id="check_ingredients_heading">Check ingredients</h2>
+      <%= form_with url: check_group_path, id: "check_ingredients_form" do |form| %>
+        <% @selected.each do |patient| %>
+          <%= hidden_field_tag "patient_ids[]", patient.id, id: nil %>
+        <% end %>
+        <p>
+          <%= label_tag :ingredients, "Ingredients (one per line, or separated by commas)" %><br>
+          <%= text_area_tag :ingredients, @ingredients_text, rows: 4, data: { turbo_permanent: true } %>
+        </p>
+        <p><%= form.submit "Check", name: nil %></p>
+      <% end %>
+      <div id="evaluation_result" aria-live="polite">
+        <%= render "evaluations/result", result: @result, patients: @names if @result %>
+      </div>
+    </section>
+  <% end %>
+<% end %>

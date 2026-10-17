@@ -27,6 +27,7 @@
     <% if authenticated? %>
       <nav aria-label="Main">
         <%= link_to "Patients", patients_path %>
+        · <%= link_to "Who's eating", group_path %>
         · Signed in as <%= Current.user.email_address %>
         <%= button_to "Sign out", session_path, method: :delete, form: { style: "display:inline" } %>
       </nav>

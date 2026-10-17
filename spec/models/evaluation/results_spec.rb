@@ -59,8 +59,8 @@ RSpec.describe "Evaluation results" do
       end
     end
 
-    it "is NONE with no patients" do
-      expect(group.tier).to eq(Evaluation::Tier::NONE)
+    it "is UNKNOWN with no patients: checking against nobody proves nothing" do
+      expect(group.tier).to eq(Evaluation::Tier::UNKNOWN)
     end
 
     it "says no flags found, never a guarantee, when there are none" do
@@ -93,5 +93,15 @@ RSpec.describe "Evaluation results" do
       result = Evaluation::GroupResult.new(patient_results: [ patient_result(7) ], ingredients: [])
       expect(result.profile_versions).to eq(7 => 1)
     end
+  end
+end
+
+RSpec.describe Evaluation::GroupResult, "with no patients" do
+  it "is unknown, never no flags, and says nothing was checked" do
+    result = Evaluation::Engine.new([]).evaluate([ "almond flour" ])
+
+    expect(result.tier).to eq(Evaluation::Tier::UNKNOWN)
+    expect(result).not_to be_no_flags
+    expect(result.summary).to eq("No patients selected — nothing was checked")
   end
 end

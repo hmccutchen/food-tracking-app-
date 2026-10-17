@@ -8,3 +8,5 @@
  *
  * Consider organizing styles into separate files for maintainability.
  */
+
+body { font-family: system-ui, sans-serif; line-height: 1.45; margin: 0 auto; max-width: 48rem; padding: 0 1rem; }

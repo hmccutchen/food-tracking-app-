@@ -3,6 +3,7 @@ module Evaluation
   # never softer than any one patient's tier.
   GroupResult = Data.define(:patient_results, :ingredients, :profile_versions, :missing_patient_ids, :evaluated_at) do
     const_set(:NO_FLAGS_SUMMARY, "No flags found — this isn't a guarantee")
+    const_set(:NO_PATIENTS_SUMMARY, "No patients selected — nothing was checked")
 
     # True when any recorded patient's current profile_version differs from the
     # stamp, or the patient no longer exists. Keys may be strings (e.g. from JSON).
@@ -22,7 +23,8 @@ module Evaluation
         profile_versions: profile_versions.freeze, missing_patient_ids: missing_patient_ids.freeze, evaluated_at:)
     end
 
-    def tier = Tier.worst(patient_results.map(&:tier))
+    # Checking against nobody proves nothing, so it is UNKNOWN, never "no flags".
+    def tier = patient_results.empty? ? Tier::UNKNOWN : Tier.worst(patient_results.map(&:tier))
 
     def for_patient(patient_id) = patient_results.find { |result| result.patient_id == patient_id }
 
@@ -36,6 +38,8 @@ module Evaluation
     def no_flags? = tier.none?
 
     def summary
+      return self.class::NO_PATIENTS_SUMMARY if patient_results.empty?
+
       case tier
       when Tier::NONE then self.class::NO_FLAGS_SUMMARY
       when Tier::CONFLICT then "Conflict found"
