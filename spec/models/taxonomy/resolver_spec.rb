@@ -206,9 +206,13 @@ RSpec.describe Taxonomy::Resolver do
       end
     end
 
+    it "lets a lactose intolerance cover milk and everything under it" do
+      %w[milk whey cheese butter].each { |kid| expect(resolver.covers?(node("lactose"), node(kid))).to be(true), kid }
+    end
+
     it "does not cover across families" do
       expect(resolver.covers?(node("milk"), node("wheat"))).to be(false)
-      expect(resolver.covers?(node("lactose"), node("milk"))).to be(false)
+      expect(resolver.covers?(node("lactose"), node("wheat"))).to be(false)
       expect(resolver.covers?(node("wheat"), node("barley"))).to be(false)
     end
 

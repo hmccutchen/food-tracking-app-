@@ -223,7 +223,7 @@ module Evaluation
       # once any cannot covers the ingredient, and never touches unknown. Where
       # it cannot clear a flag it adds a visible "you marked this OK" note.
       def apply_cans(finding)
-        can = covering_can(finding.target) or return [ finding.flag ]
+        can = covering_can(finding) or return [ finding.flag ]
 
         if cannot_applies? || !clearable?(finding)
           [ finding.flag, marked_ok_note(finding, can) ]
@@ -232,10 +232,28 @@ module Evaluation
         end
       end
 
-      def covering_can(target)
-        cans = target ? covering(target, %w[can]).map(&:first) : targets.flat_map { |each| covering(each, %w[can]).map(&:first) }
-        (cans + text_covering(%w[can])).first
+      # A can only reaches the part of the ingredient it names. A flag on a
+      # target (the whole phrase or one contained node) takes cans covering that
+      # target. A text-match flag has no target, so it takes a can for the same
+      # term, or one covering the whole ingredient. A text can that names only
+      # part of a phrase never clears a flag raised by another part.
+      def covering_can(finding)
+        cans = finding.target ? covering(finding.target, %w[can]).map(&:first) : whole_ingredient_node_cans
+        (cans + same_text_cans(finding.restriction)).first
       end
+
+      def whole_ingredient_node_cans
+        direct = targets.find { |target| target.via == :direct } or return []
+        covering(direct, %w[can]).map(&:first)
+      end
+
+      def same_text_cans(restriction)
+        wanted = [ normalized(resolution.input) ]
+        wanted << normalized(restriction.term) if restriction && restriction.taxonomy_node.nil?
+        without_node.select { |can| can.can? && wanted.include?(normalized(can.term)) }
+      end
+
+      def normalized(text) = Taxonomy::Normalizer.call(text)
 
       def cannot_applies?
         @cannot_applies ||= text_covering(%w[cannot]).any? || targets.any? { |target| covering(target, %w[cannot]).any? }

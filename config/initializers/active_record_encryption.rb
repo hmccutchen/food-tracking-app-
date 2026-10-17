@@ -1,4 +1,4 @@
-# Keys come from the environment in production. Development and test use fixed,
+# Keys come from the environment in production. Development, test and asset builds use fixed,
 # non-secret keys so the app runs without credentials.
 dev_keys = {
   primary_key: "dev-primary-key-not-secret-000000",
@@ -8,7 +8,10 @@ dev_keys = {
 
 Rails.application.configure do
   encryption = config.active_record.encryption
-  if Rails.env.production?
+  # SECRET_KEY_BASE_DUMMY marks a build step (assets:precompile in the
+  # Dockerfile) that boots production without secrets and never touches data,
+  # so it gets the throwaway keys. Real keys stay runtime-only.
+  if Rails.env.production? && ENV["SECRET_KEY_BASE_DUMMY"].blank?
     encryption.primary_key = ENV.fetch("AR_ENCRYPTION_PRIMARY_KEY")
     encryption.deterministic_key = ENV.fetch("AR_ENCRYPTION_DETERMINISTIC_KEY")
     encryption.key_derivation_salt = ENV.fetch("AR_ENCRYPTION_KEY_DERIVATION_SALT")

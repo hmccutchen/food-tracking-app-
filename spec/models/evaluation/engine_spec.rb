@@ -387,7 +387,37 @@ RSpec.describe Evaluation::Engine do
     end
   end
 
+  describe "lactose intolerance" do
+    %w[milk whey cheese butter cream].each do |ingredient|
+      it "is a conflict for #{ingredient}, which contains lactose" do
+        result = result_for(patient_with(intolerance: "lactose intolerance"), [ ingredient ])
+        expect(result.tier).to eq(conflict)
+      end
+    end
+
+    it "is a conflict for a phrase containing milk" do
+      result = result_for(patient_with(intolerance: "lactose"), [ "shredded cheddar cheese" ])
+      expect(result.tier).to eq(conflict)
+    end
+
+    it "does not reach a non-dairy item" do
+      result = result_for(patient_with(intolerance: "lactose"), [ "olive oil" ])
+      expect(result.active_flags.map(&:source)).not_to include(:intolerance)
+    end
+  end
+
   describe "overrides and precedence" do
+    it "a can on one part of a phrase never clears a text match on another part" do
+      result = result_for(patient_with(intolerance: "sorbitol", can: "banana"), [ "banana with sorbitol" ])
+      expect(result.tier).to eq(conflict)
+      expect(result.active_flags.map(&:source)).to include(:intolerance)
+    end
+
+    it "a can for the same unrecognized term clears its text match" do
+      result = result_for(patient_with(intolerance: "sorbitol", can: "sorbitol"), [ "banana with sorbitol" ])
+      expect(result.overridden_flags.map(&:source)).to include(:intolerance)
+    end
+
     it "cannot beats can on the same node" do
       result = result_for(patient_with(can: "shrimp", cannot: "shrimp"), [ "shrimp" ])
       expect(result.tier).to eq(conflict)

@@ -27,7 +27,10 @@ module TaxonomySeedData
         "casein" => { aliases: [ "caseinate", "sodium caseinate", "calcium caseinate" ] },
         "yogurt" => { aliases: [ "yoghurt", "greek yogurt" ] },
         "ghee" => { aliases: [ "clarified butter" ] },
-        "lactose" => { kind: :intolerance, aliases: [ "lactose intolerance", "lactose intolerant", "milk sugar" ] }
+        # Lactose sits under milk (a milk allergy covers it) and also lists milk
+        # as a member, so a lactose intolerance covers milk and everything under it.
+        "lactose" => { kind: :intolerance, aliases: [ "lactose intolerance", "lactose intolerant", "milk sugar" ],
+                       members: [ "milk" ] }
       }
     },
     "egg" => {
