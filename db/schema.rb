@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_17_211919) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_17_230001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -24,6 +24,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_211919) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "taxonomy_aliases", force: :cascade do |t|
+    t.bigint "taxonomy_node_id", null: false
+    t.string "term", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["taxonomy_node_id"], name: "index_taxonomy_aliases_on_taxonomy_node_id"
+    t.index ["term"], name: "index_taxonomy_aliases_on_term", unique: true
+    t.index ["term"], name: "index_taxonomy_aliases_on_term_trgm", opclass: :gin_trgm_ops, using: :gin
+  end
+
+  create_table "taxonomy_nodes", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.string "kind", default: "ingredient", null: false
+    t.bigint "parent_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["kind"], name: "index_taxonomy_nodes_on_kind"
+    t.index ["name"], name: "index_taxonomy_nodes_on_name", unique: true
+    t.index ["name"], name: "index_taxonomy_nodes_on_name_trgm", opclass: :gin_trgm_ops, using: :gin
+    t.index ["parent_id"], name: "index_taxonomy_nodes_on_parent_id"
+    t.index ["slug"], name: "index_taxonomy_nodes_on_slug", unique: true
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email_address", null: false
     t.string "password_digest", null: false
@@ -33,4 +57,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_17_211919) do
   end
 
   add_foreign_key "sessions", "users"
+  add_foreign_key "taxonomy_aliases", "taxonomy_nodes", on_delete: :cascade
+  add_foreign_key "taxonomy_nodes", "taxonomy_nodes", column: "parent_id", on_delete: :nullify
 end

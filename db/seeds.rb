@@ -5,3 +5,5 @@ password = ENV.fetch("NURSE_PASSWORD", "change-me-please")
 User.find_or_create_by!(email_address: email) do |user|
   user.password = password
 end
+
+Taxonomy::Seed.load!
