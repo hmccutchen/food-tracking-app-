@@ -10,10 +10,31 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_18_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_18_000010) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
+
+  create_table "foods", force: :cascade do |t|
+    t.bigint "fdc_id", null: false
+    t.string "source", null: false
+    t.string "data_type", null: false
+    t.string "description", null: false
+    t.string "category"
+    t.text "ingredients_text"
+    t.date "publication_date"
+    t.datetime "imported_at", null: false
+    t.jsonb "raw", default: {}, null: false
+    t.bigint "taxonomy_node_id"
+    t.string "match_type", default: "unresolved", null: false
+    t.string "match_reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["description"], name: "index_foods_on_description", opclass: :gin_trgm_ops, using: :gin
+    t.index ["fdc_id"], name: "index_foods_on_fdc_id", unique: true
+    t.index ["source"], name: "index_foods_on_source"
+    t.index ["taxonomy_node_id"], name: "index_foods_on_taxonomy_node_id"
+  end
 
   create_table "patients", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -90,6 +111,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_000002) do
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
+  add_foreign_key "foods", "taxonomy_nodes", on_delete: :nullify
   add_foreign_key "patients", "users"
   add_foreign_key "restrictions", "patients", on_delete: :cascade
   add_foreign_key "restrictions", "taxonomy_nodes", on_delete: :nullify

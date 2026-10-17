@@ -4,6 +4,7 @@ Rails.application.routes.draw do
   resources :patients do
     resources :restrictions, only: %i[create edit update destroy]
   end
+  resources :foods, only: :index
   resource :group, only: :show do
     post :check
   end

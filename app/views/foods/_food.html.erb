@@ -1,0 +1,11 @@
+<li id="<%= dom_id(food) %>">
+  <strong><%= food.description %></strong>
+  <br><%= food.source_label %><% if food.category.present? %> · <%= food.category %><% end %>
+  · imported <%= food.imported_at.strftime("%B %-d, %Y") %>
+  <br><%= food_link_summary(food) %>
+  <% if food.ingredients_text.present? %>
+    <br>Ingredients: <%= food.ingredients_text %>
+  <% else %>
+    <br><em>No ingredient list on this record.</em>
+  <% end %>
+</li>
