@@ -8,6 +8,9 @@ starting a milestone.
 - Ruby lives at `/opt/rbenv/versions/3.3.6/bin`; put it on `PATH` first.
 - Postgres 16 runs locally (`service postgresql start` if it's down). The DB role is `root`.
 - Run specs with `bundle exec rspec`. Run the full CI with `bin/ci`.
+- When several builders work at once, each runs specs against its own test database:
+  `TEST_ENV_NUMBER=<n> bundle exec rspec` (create it once with
+  `TEST_ENV_NUMBER=<n> RAILS_ENV=test bin/rails db:create db:schema:load`).
 - JS system specs (`js: true`) use Cuprite against the Chromium at
   `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`.
 
