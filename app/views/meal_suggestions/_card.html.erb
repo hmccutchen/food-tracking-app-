@@ -11,7 +11,7 @@
     <p class="meal-ingredients-label">Ingredients:</p>
     <ul class="meal-ingredients">
       <% suggestion.ingredients.each do |ingredient| %>
-        <li><%= ingredient %></li>
+        <li><%= ai_text(ingredient) %></li>
       <% end %>
     </ul>
   <% end %>

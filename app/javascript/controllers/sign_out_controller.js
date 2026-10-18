@@ -8,8 +8,12 @@ export default class extends Controller {
     if (this.purged) return
     event.preventDefault()
     event.stopImmediatePropagation()
-    await purgeEverywhere(1500)
-    this.purged = true
-    this.element.requestSubmit()
+    try {
+      await purgeEverywhere(1500)
+    } finally {
+      // Sign out whatever happened to the cache clean-up.
+      this.purged = true
+      this.element.requestSubmit()
+    }
   }
 }

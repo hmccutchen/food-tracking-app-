@@ -106,6 +106,17 @@ RSpec.describe "Offline avoid lists (service worker)", js: true do
     expect(avoid_list_urls).to eq([ group_url ])
   end
 
+  it "still signs out when the service worker can't be reached" do
+    sign_in_and_open_group
+    page.execute_script(<<~JS)
+      navigator.serviceWorker.getRegistration = () => Promise.reject(new Error("storage blocked"))
+    JS
+
+    click_button "Sign out"
+
+    expect(page).to have_current_path(new_session_path)
+  end
+
   it "deletes avoid-lists when the nurse signs out" do
     sign_in_and_open_group
 

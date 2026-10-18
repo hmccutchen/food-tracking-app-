@@ -22,10 +22,15 @@ class MealSuggester
       end
     end
 
-    def self.pattern(word)
-      return /#{Regexp.escape(word)}/i if word.match?(UNSPACED_SCRIPT)
+    # Straight, curly and backtick apostrophes all match each other, so
+    # "O'Brien" on file still catches "O’Brien" typed on a phone.
+    APOSTROPHES = "['’‘`ʼ]".freeze
 
-      /(?<![[:alnum:]])#{Regexp.escape(word)}(?![[:alnum:]])/i
+    def self.pattern(word)
+      body = Regexp.escape(word).gsub(/['’‘`ʼ]/, APOSTROPHES)
+      return /#{body}/i if word.match?(UNSPACED_SCRIPT)
+
+      /(?<![[:alnum:]])#{body}(?![[:alnum:]])/i
     end
   end
 end

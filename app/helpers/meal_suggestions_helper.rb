@@ -1,6 +1,8 @@
 module MealSuggestionsHelper
-  # AI-written text (dish names, prep notes) is shown as is, except that the
-  # nurse is never told something is "safe": that word is the AI's, not ours.
+  # AI-written text (dish names, ingredients, prep notes, and flag reasons that
+  # quote an ingredient) is shown as is, except that the nurse is never told
+  # something is "safe": that word is the AI's, not ours. Display only: the
+  # engine always evaluates the original ingredient text.
   AI_WORDING = { /\bsafely\b/i => "carefully", /\bsafe\b/i => "lower-risk" }.freeze
 
   def ai_text(text)

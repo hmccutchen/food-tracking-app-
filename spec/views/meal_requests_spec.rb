@@ -35,6 +35,17 @@ RSpec.describe "meal_requests/_meal_request" do
     expect(html).not_to include("Out of date", "Re-check", "Now a conflict", "Dropped")
   end
 
+  it "never shows the AI's 'safe' in ingredients or in flag reasons that quote them" do
+    request = stored_meal_request(user, [ ann ], kept: [ [ "Pancakes", [ "allergy-safe flour", "milk" ], [] ] ])
+    html = render_request(request)
+
+    # Visible text only: the "Add as custom item" link keeps the original
+    # ingredient in its URL so the nurse's custom item matches what was checked.
+    text = Nokogiri::HTML.fragment(html).text
+    expect(text).to include("allergy-lower-risk flour")
+    expect(text).not_to match(/\bsafe\b/i)
+  end
+
   it "collapses dropped meals under 'Dropped (conflicts found)' with their reasons" do
     request = stored_meal_request(user, [ ann ], kept: [ [ "Rice bowl", [ "rice" ] ] ],
       dropped: [ [ "Shrimp rice", [ "shrimp", "rice" ] ] ])

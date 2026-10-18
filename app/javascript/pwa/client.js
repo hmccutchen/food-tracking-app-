@@ -41,9 +41,14 @@ export async function purgeLocally() {
 }
 
 // Asks the worker to forget saved lists, waiting at most `timeout` ms.
+// Never rejects: a missing or broken worker (or blocked storage) must not
+// stop the nurse from signing out.
 export async function purgeEverywhere(timeout = 1500) {
+  const worker = Promise.resolve()
+    .then(() => postToWorker({ type: "purge" }, { timeout }))
+    .catch(() => null)
   await Promise.race([
-    Promise.all([ purgeLocally(), postToWorker({ type: "purge" }, { timeout }) ]),
+    Promise.allSettled([ purgeLocally(), worker ]),
     new Promise((resolve) => setTimeout(resolve, timeout + 100))
   ])
 }

@@ -38,7 +38,7 @@
       <% if patient_result.active_flags.any? %>
         <ul class="flags">
           <% patient_result.active_flags.each do |flag| %>
-            <li data-tier="<%= flag.tier %>"><%= tier_label(flag.tier) %>: <%= flag.reason %>
+            <li data-tier="<%= flag.tier %>"><%= tier_label(flag.tier) %>: <%= ai_text(flag.reason) %>
               <% if custom_item_links && flag.source == :unresolved && flag.ingredient.present? %>
                 <%= link_to "Add as custom item", new_custom_item_path(name: flag.ingredient),
                       class: "add-custom-item", data: { turbo_frame: "_top" } %>
@@ -52,7 +52,7 @@
           <p>You marked this OK</p>
           <ul>
             <% patient_result.overridden_flags.each do |flag| %>
-              <li><%= flag.reason %></li>
+              <li><%= ai_text(flag.reason) %></li>
             <% end %>
           </ul>
         </div>
