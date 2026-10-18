@@ -69,8 +69,16 @@ RSpec.describe Usda::Downloader do
     Dir.mktmpdir do |dir|
       expect { downloader.download(dir) }.to raise_error(described_class::Error, /only https:\/\/fdc.nal.usda.gov/)
     end
-    expect { Dir.mktmpdir { |dir| downloader("USDA_SR_LEGACY_URL" => "http://fdc.nal.usda.gov/x.zip").download(dir) } }
-      .to raise_error(described_class::Error)
+  end
+
+  it "refuses a plain-HTTP URL, even on fdc.nal.usda.gov" do
+    stub_request(:get, described_class::PAGE_URL).to_return(body: page)
+    plain = "http://fdc.nal.usda.gov/fdc-datasets/x.zip"
+    Dir.mktmpdir do |dir|
+      expect { downloader("USDA_FOUNDATION_URL" => plain).download(dir) }
+        .to raise_error(described_class::Error, "refusing #{plain}: only https://fdc.nal.usda.gov is allowed")
+    end
+    expect(a_request(:get, plain)).not_to have_been_made
   end
 
   it "says which download failed" do
