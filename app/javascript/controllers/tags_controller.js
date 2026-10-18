@@ -2,21 +2,23 @@ import { Controller } from "@hotwired/stimulus"
 import { insideBrackets, split, splitKeepingLast } from "lib/tag_split"
 
 // Turns a comma-separated text field into tags: type an item, then a comma
-// or Enter, and it becomes a chip with a remove button. Pasted lists split
-// the same way. Commas inside brackets stay put, so a label like
-// "wheat flour (enriched, niacin)" is one item, as the server reads it too.
+// or Enter, and it becomes a chip with a remove button. Pasted lists (one per
+// line or comma-separated) split the same way, using the field's own server
+// separators (lib/tag_split.js). With data-tags-brackets-value="true" (a food
+// label's ingredients), commas inside brackets stay with their item.
 //
 // The original field stays in the form (hidden) and always holds the tags
 // joined with `joiner`, so the server sees exactly what it did before.
 // Without JavaScript the plain field is left as it is.
 export default class extends Controller {
-  static values = { joiner: { type: String, default: ", " } }
+  static values = { joiner: { type: String, default: ", " }, brackets: { type: Boolean, default: false } }
 
   connect() {
     this.field = this.element.querySelector("input[type='text'], textarea")
     if (!this.field) return
 
-    this.tags = split(this.field.value)
+    this.splitOptions = { brackets: this.bracketsValue }
+    this.tags = split(this.field.value, this.splitOptions)
     this.box = document.createElement("div")
     this.box.className = "tags"
     this.list = document.createElement("ul")
@@ -43,11 +45,13 @@ export default class extends Controller {
 
     this.onKeydown = this.keydown.bind(this)
     this.onInput = this.typed.bind(this)
+    this.onPaste = this.pasted.bind(this)
     this.onBlur = () => this.commit(this.input.value)
     this.onBoxClick = (event) => { if (event.target === this.box || event.target === this.list) this.input.focus() }
     this.onSubmit = () => this.commit(this.input.value)
     this.input.addEventListener("keydown", this.onKeydown)
     this.input.addEventListener("input", this.onInput)
+    this.input.addEventListener("paste", this.onPaste)
     this.input.addEventListener("blur", this.onBlur)
     this.box.addEventListener("click", this.onBoxClick)
     this.field.form?.addEventListener("submit", this.onSubmit, true)
@@ -69,7 +73,8 @@ export default class extends Controller {
 
   keydown(event) {
     const separator = event.key === "," || event.key === ";"
-    if (event.key === "Enter" || (separator && !insideBrackets(this.input.value))) {
+    const beforeCaret = this.input.value.slice(0, this.input.selectionStart ?? this.input.value.length)
+    if (event.key === "Enter" || (separator && !(this.bracketsValue && insideBrackets(beforeCaret)))) {
       event.preventDefault()
       this.commit(this.input.value)
     } else if (event.key === "Backspace" && this.input.value === "" && this.tags.length > 0) {
@@ -80,17 +85,31 @@ export default class extends Controller {
   // Pasted (or autocorrected) text with separators in it becomes tags,
   // except the last piece, which may still be being typed.
   typed() {
-    const parts = splitKeepingLast(this.input.value)
+    const parts = splitKeepingLast(this.input.value, this.splitOptions)
     if (parts.length < 2) return
 
     this.input.value = parts.pop()
     this.add(parts)
   }
 
+  // A one-line box drops pasted line breaks, so a pasted list is split here,
+  // from the clipboard text, before the box sees it. A pasted list is taken
+  // as complete: every item, the last one too, becomes a tag.
+  pasted(event) {
+    const text = event.clipboardData?.getData("text") || ""
+    if (!/[,;\n\r]/.test(text)) return
+
+    event.preventDefault()
+    const { value, selectionStart, selectionEnd } = this.input
+    const start = selectionStart ?? value.length
+    const end = selectionEnd ?? value.length
+    this.commit(value.slice(0, start) + text + value.slice(end))
+  }
+
   commit(text) {
     if (!this.box) return
     this.input.value = ""
-    this.add(split(text))
+    this.add(split(text, this.splitOptions))
   }
 
   add(items) {

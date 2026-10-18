@@ -9,16 +9,25 @@ test("splits on commas, semicolons and new lines, trimming and dropping blanks",
   assert.deepEqual(split(null), [])
 })
 
-test("keeps commas inside brackets, as on a food label", () => {
-  assert.deepEqual(split("wheat flour (enriched, niacin), salt, spices [paprika, cumin]"),
+test("with brackets: true, keeps commas inside brackets, as on a food label", () => {
+  const brackets = { brackets: true }
+  assert.deepEqual(split("wheat flour (enriched, niacin), salt, spices [paprika, cumin]", brackets),
     [ "wheat flour (enriched, niacin)", "salt", "spices [paprika, cumin]" ])
-  assert.deepEqual(split("oddly) closed, fine"), [ "oddly) closed", "fine" ])
+  assert.deepEqual(split("oddly) closed, fine", brackets), [ "oddly) closed", "fine" ])
+})
+
+// Other names, check ingredients and keywords are split server-side on every
+// separator, so their chips must be too: one chip, one saved item.
+test("by default, splits on every separator like the server parsers do", () => {
+  assert.deepEqual(split("soup (mild, spicy)"), [ "soup (mild", "spicy)" ])
+  assert.deepEqual(split("milk\r\nsalt"), [ "milk", "salt" ])
 })
 
 test("leaves the piece still being typed for the entry box", () => {
   assert.deepEqual(splitKeepingLast("almond, soy sau"), [ "almond", "soy sau" ])
   assert.deepEqual(splitKeepingLast("almond,"), [ "almond", "" ])
   assert.deepEqual(splitKeepingLast("almond"), [ "almond" ])
+  assert.deepEqual(splitKeepingLast("milk\nsalt\n"), [ "milk", "salt", "" ])
 })
 
 test("knows when a bracket is still open, so a typed comma stays in the item", () => {

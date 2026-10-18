@@ -6,7 +6,7 @@
     <%= form.label :name, "Name" %>
     <%= form.text_field :name, required: true, autocomplete: "off" %>
   </div>
-  <div class="field" data-controller="tags">
+  <div class="field" data-controller="tags" data-tags-brackets-value="true">
     <%= form.label :ingredients_text, "Ingredients (optional, as on the label)" %>
     <%= form.text_area :ingredients_text, rows: 3, placeholder: "e.g. wheat flour, milk",
           aria: { describedby: "custom_item_ingredients_help" } %>
