@@ -47,5 +47,35 @@
         <% end %>
       </div>
     </section>
+
+    <section id="suggest_meals" aria-labelledby="suggest_meals_heading">
+      <h2 id="suggest_meals_heading">Suggest meals</h2>
+      <p>Meal ideas come from your AI provider. Every one is checked against these patients' restrictions here,
+        and meals with a conflict are set aside. Only restriction terms are sent, never names.</p>
+      <%= form_with url: meal_requests_path, id: "suggest_meals_form" do |form| %>
+        <% @selected.each do |patient| %>
+          <%= hidden_field_tag "patient_ids[]", patient.id, id: nil %>
+        <% end %>
+        <p>
+          <%= label_tag :request_text, "What kind of meal? (optional, e.g. \"dinner, soft foods\")" %><br>
+          <%= text_area_tag :request_text, nil, rows: 2, maxlength: 500 %>
+        </p>
+        <p><%= form.submit "Suggest meals", name: nil %></p>
+      <% end %>
+    </section>
+  <% end %>
+
+  <% if @meal_requests.any? || @selected.any? %>
+    <section id="recent_meal_requests" aria-labelledby="recent_meal_requests_heading">
+      <h2 id="recent_meal_requests_heading">Recent meal suggestions</h2>
+      <div id="meal_requests">
+        <% @meal_requests.each do |meal_request| %>
+          <%= render "meal_requests/meal_request", meal_request: %>
+        <% end %>
+      </div>
+      <% if @meal_requests.empty? %>
+        <p id="meal_requests_empty">No meal suggestions yet.</p>
+      <% end %>
+    </section>
   <% end %>
 <% end %>

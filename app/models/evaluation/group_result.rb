@@ -15,6 +15,17 @@ module Evaluation
       stamp.any? { |id, version| current[id] != Integer(version) }
     end
 
+    # Rebuilds a stored result (see #to_h). Tiers are recomputed from the
+    # stored flags, exactly as the engine computed them; nothing is re-evaluated.
+    def self.from_h(hash)
+      hash = hash.to_h.symbolize_keys
+      new(patient_results: Array(hash[:patient_results]).map { |result| PatientResult.from_h(result) },
+        ingredients: hash[:ingredients]&.map(&:to_s),
+        profile_versions: hash.fetch(:profile_versions, {}).to_h { |id, version| [ Integer(id), Integer(version) ] },
+        missing_patient_ids: Array(hash[:missing_patient_ids]).map { |id| Integer(id) },
+        evaluated_at: hash[:evaluated_at].present? ? Time.zone.parse(hash[:evaluated_at].to_s) : nil)
+    end
+
     # missing_patient_ids: selected patients that no longer existed when evaluated.
     def initialize(patient_results:, ingredients:, profile_versions: nil, missing_patient_ids: [],
                    evaluated_at: Time.current)
@@ -25,6 +36,15 @@ module Evaluation
 
     # Checking against nobody proves nothing, so it is UNKNOWN, never "no flags".
     def tier = patient_results.empty? ? Tier::UNKNOWN : Tier.worst(patient_results.map(&:tier))
+
+    # Plain JSON-ready hash (string keys) for storing the result. Holds patient
+    # ids, never names; flag reasons do name restriction terms, so whoever
+    # stores this must encrypt it.
+    def to_h
+      { "patient_results" => patient_results.map(&:to_h), "ingredients" => ingredients&.to_a,
+        "profile_versions" => profile_versions.transform_keys(&:to_s),
+        "missing_patient_ids" => missing_patient_ids.to_a, "evaluated_at" => evaluated_at&.iso8601(6) }
+    end
 
     def for_patient(patient_id) = patient_results.find { |result| result.patient_id == patient_id }
 

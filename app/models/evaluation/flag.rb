@@ -16,6 +16,18 @@ module Evaluation
         override_reason:)
     end
 
+    # Plain JSON-ready hash for storing a result (M11). from_h reverses it.
+    def self.from_h(hash)
+      hash = hash.to_h.symbolize_keys
+      new(tier: hash.fetch(:tier), ingredient: hash[:ingredient], reason: hash.fetch(:reason),
+        source: hash.fetch(:source), overridden: hash[:overridden], override_reason: hash[:override_reason])
+    end
+
+    def to_h
+      { "tier" => tier.to_s, "ingredient" => ingredient, "reason" => reason, "source" => source.to_s,
+        "overridden" => overridden, "override_reason" => override_reason }
+    end
+
     def active? = !overridden
 
     # The same finding, kept visible but no longer counted ("you marked this OK").

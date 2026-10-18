@@ -43,6 +43,8 @@ module Evaluation
     end
 
     def none? = equal?(NONE)
+    # Stored as its name only; read back with Tier.fetch.
+    def as_json(*) = to_s
     def to_sym = name
     def to_s = name.to_s
     def inspect = "#<Evaluation::Tier #{name}>"

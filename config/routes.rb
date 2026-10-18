@@ -11,6 +11,9 @@ Rails.application.routes.draw do
   resource :group, only: :show do
     post :check
   end
+  resources :meal_requests, path: "meal-requests", only: %i[create show] do
+    post :recheck, on: :member
+  end
   namespace :settings do
     resource :ai, only: %i[show update], controller: "ai"
     resources :ai_credentials, path: "ai", param: :provider, only: :update do

@@ -1,0 +1,80 @@
+<%# One "Suggest meals" request and its cards. Rendered on the Who's eating
+    page, by the poll fallback (MealRequestsController#show), after a re-check,
+    and in the job's Turbo Stream broadcast, so it must not rely on Current. %>
+<%# locals: (meal_request:) %>
+<% names = meal_request.patient_names %>
+<% patient_ids = meal_request.current_patient_ids %>
+<%= turbo_frame_tag meal_request, class: "meal-request", data: { status: meal_request.status } do %>
+  <% if meal_request.pending? %>
+    <%= turbo_stream_from meal_request %>
+  <% end %>
+  <header class="meal-request-header">
+    <h3>Meals for <%= names.values.to_sentence.presence || "patients no longer on file" %></h3>
+    <p class="meal-request-meta">
+      Asked <%= time_tag meal_request.created_at, meal_request.created_at.to_fs(:short) %>
+      <% if meal_request.request_text.present? %>· “<%= meal_request.request_text %>”<% end %>
+    </p>
+  </header>
+
+  <% if meal_request.pending? %>
+    <p class="finding-meals" role="status" aria-live="polite"
+       data-controller="poll" data-poll-url-value="<%= meal_request_path(meal_request) %>"
+       data-poll-interval-value="3000">Finding meals…</p>
+  <% elsif meal_request.failed? %>
+    <div class="meal-card meal-card-failed" role="alert">
+      <p><%= meal_request.error_message.presence || SuggestMealsJob::GENERIC_ERROR %></p>
+      <% if meal_request.settings_error? %>
+        <p><%= link_to "Open AI settings", settings_ai_path, data: { turbo_frame: "_top" } %></p>
+      <% end %>
+    </div>
+  <% else %>
+    <% if meal_request.stale? %>
+      <div class="meal-request-stale">
+        <p>A patient's restrictions changed since these meals were checked.</p>
+        <%= button_to "Re-check", recheck_meal_request_path(meal_request), class: "recheck" %>
+      </div>
+    <% end %>
+
+    <% if meal_request.not_found? %>
+      <div class="meal-card meal-card-not-found" data-tier="conflict">
+        <% if meal_request.stale? %><p class="stale" role="alert">Out of date — re-check</p><% end %>
+        <h4>Couldn't find a meal that fits all of these</h4>
+        <% if meal_request.blocking_conflicts.present? %>
+          <p>What got in the way:</p>
+          <ul class="blocking-conflicts">
+            <% meal_request.blocking_conflicts.each do |reason| %>
+              <li><%= reason %></li>
+            <% end %>
+          </ul>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% meal_request.kept_suggestions.each do |suggestion| %>
+      <%= render "meal_suggestions/card", suggestion:, names:, patient_ids:,
+            provider_name: meal_request.provider_name %>
+    <% end %>
+  <% end %>
+
+  <% dropped = meal_request.finished? ? meal_request.dropped_suggestions : [] %>
+  <% if dropped.any? %>
+    <details class="dropped-meals">
+      <summary>Dropped (conflicts found) — <%= pluralize(dropped.size, "meal") %></summary>
+      <ul>
+        <% dropped.each do |suggestion| %>
+          <li id="<%= dom_id(suggestion) %>" class="dropped-meal" data-tier="<%= suggestion.tier %>">
+            <strong><%= ai_text(suggestion.dish) %></strong>
+            <% reasons = suggestion.blocking_reasons %>
+            <% if reasons.any? %>
+              <ul class="dropped-reasons">
+                <% reasons.each do |reason| %><li><%= reason %></li><% end %>
+              </ul>
+            <% else %>
+              <p>No conflict after re-check: <%= tier_label(suggestion.tier) %></p>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    </details>
+  <% end %>
+<% end %>

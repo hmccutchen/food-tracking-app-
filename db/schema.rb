@@ -44,6 +44,38 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_000120) do
     t.index ["word"], name: "index_ingredient_descriptors_on_word", unique: true
   end
 
+  create_table "meal_requests", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.integer "patient_ids", default: [], null: false, array: true
+    t.text "request_text"
+    t.string "status", default: "queued", null: false
+    t.string "provider"
+    t.string "error_message"
+    t.string "error_code"
+    t.integer "attempts_count", default: 0, null: false
+    t.text "blocking_conflicts"
+    t.jsonb "profile_versions", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "created_at"], name: "index_meal_requests_on_user_id_and_created_at"
+  end
+
+  create_table "meal_suggestions", force: :cascade do |t|
+    t.bigint "meal_request_id", null: false
+    t.integer "position", null: false
+    t.string "dish", null: false
+    t.jsonb "ingredients", default: [], null: false
+    t.jsonb "prep_notes", default: [], null: false
+    t.boolean "kept", null: false
+    t.string "tier", null: false
+    t.text "result_json", null: false
+    t.jsonb "profile_versions", default: {}, null: false
+    t.datetime "evaluated_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["meal_request_id", "position"], name: "index_meal_suggestions_on_meal_request_id_and_position", unique: true
+  end
+
   create_table "patients", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "display_name", null: false
@@ -164,6 +196,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_000120) do
   end
 
   add_foreign_key "foods", "taxonomy_nodes", on_delete: :nullify
+  add_foreign_key "meal_requests", "users", on_delete: :cascade
+  add_foreign_key "meal_suggestions", "meal_requests", on_delete: :cascade
   add_foreign_key "patients", "users"
   add_foreign_key "prep_method_risks", "prep_methods", on_delete: :cascade
   add_foreign_key "prep_method_risks", "taxonomy_nodes", on_delete: :cascade
