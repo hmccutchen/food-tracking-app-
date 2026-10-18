@@ -85,7 +85,7 @@ module MealSamples
       credential = ProviderCredential.new(provider:, api_key: key, key_last4: key.last(4), model:)
       rows = []
       ActiveRecord::Base.transaction(requires_new: true) do
-        user = User.create!(email_address: "meal-samples-#{SecureRandom.hex(6)}@example.invalid",
+        user = User.create!(email: "meal-samples-#{SecureRandom.hex(6)}@example.invalid",
           password: SecureRandom.hex(16))
         rows = samples.map { |sample| run_sample(user, credential, sample) }
         raise ActiveRecord::Rollback

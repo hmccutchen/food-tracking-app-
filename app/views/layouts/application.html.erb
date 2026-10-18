@@ -16,7 +16,7 @@
     <%= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#162022" media="(prefers-color-scheme: dark)">
-    <% if authenticated? %>
+    <% if user_signed_in? %>
       <%# Turbo's in-memory page snapshots would outlive sign-out; skip them. %>
       <meta name="turbo-cache-control" content="no-cache">
     <% end %>
@@ -30,12 +30,12 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="<%= authenticated? ? "signed-in" : "signed-out" %>">
+  <body class="<%= user_signed_in? ? "signed-in" : "signed-out" %>">
     <a class="skip-link" href="#main">Skip to content</a>
-    <% if authenticated? %>
+    <% if user_signed_in? %>
       <%# Registers the service worker (signed-in pages only) and tells it a session is active. %>
       <div id="pwa" hidden data-controller="pwa"
-           data-pwa-offline-caching-value="<%= Current.user.offline_caching_enabled %>"></div>
+           data-pwa-offline-caching-value="<%= current_user.offline_caching_enabled %>"></div>
       <header class="app-bar">
         <div class="app-bar-inner">
           <%= link_to "Meal Planner", group_path, class: "brand" %>
@@ -58,12 +58,13 @@
                 <li><%= nav_link_to "AI settings", settings_ai_path, :ai_settings %></li>
                 <li><%= nav_link_to "Offline", settings_offline_path, :offline %></li>
                 <li><%= nav_link_to "Preparation notes", prep_methods_path, :prep_notes %></li>
+                <li><%= nav_link_to "Account", edit_account_path, :account %></li>
               </ul>
             </div>
           </nav>
           <div class="account">
-            <span class="account-user">Signed in as <%= Current.user.email_address %></span>
-            <%= button_to "Sign out", session_path, method: :delete, class: "btn btn-secondary btn-small",
+            <span class="account-user">Signed in as <%= current_user.email %></span>
+            <%= button_to "Sign out", destroy_user_session_path, method: :delete, class: "btn btn-secondary btn-small",
                   form: { class: "sign-out-form", id: "sign_out", data: { controller: "sign-out", action: "submit->sign-out#submit" } } %>
           </div>
         </div>
@@ -71,7 +72,7 @@
       <p id="offline_banner" class="offline-banner" role="status" hidden data-controller="offline-banner"></p>
     <% end %>
     <main id="main" class="page">
-      <% if authenticated? && notice.present? %><p role="status" class="notice flash"><%= notice %></p><% end %>
+      <% if user_signed_in? && notice.present? %><p role="status" class="notice flash"><%= notice %></p><% end %>
       <%= yield %>
     </main>
   </body>

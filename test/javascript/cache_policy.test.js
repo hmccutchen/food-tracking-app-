@@ -23,7 +23,7 @@ test("only GET /group (with or without a selection) is cacheable", () => {
 })
 
 test("settings, sign-in, patients, foods, custom items and meal requests are network-only", () => {
-  for (const path of [ "/settings/ai", "/settings/offline", "/session/new", "/session", "/patients", "/patients/1",
+  for (const path of [ "/settings/ai", "/settings/offline", "/users/sign_in", "/users/sign_out", "/account/edit", "/patients", "/patients/1",
     "/foods?q=almond", "/custom-items", "/meal-requests/3", "/", "/passwords/new", "/groups" ]) {
     assert.equal(policy.isCacheableRequest(`${ORIGIN}${path}`, "GET", ORIGIN), false, path)
   }
@@ -35,7 +35,7 @@ test("only plain 200 HTML avoid-list responses are stored", () => {
   assert.equal(policy.isCacheableResponse(response({ status: 403 })), false)
   assert.equal(policy.isCacheableResponse(response({ status: 500 })), false)
   assert.equal(policy.isCacheableResponse(response({ status: 0, type: "opaqueredirect" })), false)
-  assert.equal(policy.isCacheableResponse(response({ redirected: true, url: `${ORIGIN}/session/new` })), false)
+  assert.equal(policy.isCacheableResponse(response({ redirected: true, url: `${ORIGIN}/users/sign_in` })), false)
   assert.equal(policy.isCacheableResponse(response({ redirected: true, url: `${ORIGIN}/patients` })), false)
   assert.equal(policy.isCacheableResponse(response({ contentType: "application/json" })), false)
   assert.equal(policy.isCacheableResponse(null), false)
@@ -43,8 +43,8 @@ test("only plain 200 HTML avoid-list responses are stored", () => {
 
 test("a 401 or landing on sign-in purges; ordinary responses do not", () => {
   assert.equal(policy.shouldPurgeFor(response({ status: 401 }), `${ORIGIN}/group`), true)
-  assert.equal(policy.shouldPurgeFor(response({ redirected: true, url: `${ORIGIN}/session/new` }), `${ORIGIN}/group`), true)
-  assert.equal(policy.shouldPurgeFor(response({ url: `${ORIGIN}/session/new` }), `${ORIGIN}/session/new`), true)
+  assert.equal(policy.shouldPurgeFor(response({ redirected: true, url: `${ORIGIN}/users/sign_in` }), `${ORIGIN}/group`), true)
+  assert.equal(policy.shouldPurgeFor(response({ url: `${ORIGIN}/users/sign_in` }), `${ORIGIN}/users/sign_in`), true)
   assert.equal(policy.shouldPurgeFor(response(), `${ORIGIN}/group?patient_ids[]=1`), false)
   assert.equal(policy.shouldPurgeFor(response({ status: 403 }), `${ORIGIN}/patients/9`), false)
   assert.equal(policy.shouldPurgeFor(response({ redirected: true, url: `${ORIGIN}/group?patient_ids[]=1` }),

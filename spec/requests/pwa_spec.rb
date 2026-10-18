@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe "PWA" do
-  let(:user) { create(:user, email_address: "nurse.pwa@example.com") }
+  let(:user) { create(:user, email: "nurse.pwa@example.com") }
   let!(:patient) do
     create(:patient, user:, display_name: "Zelda Quimby").tap do |zelda|
       create(:restriction, patient: zelda, kind: :allergy, term: "sesame")
@@ -28,7 +28,7 @@ RSpec.describe "PWA" do
     end
 
     it "is linked from every page" do
-      get new_session_path
+      get new_user_session_path
       expect(response.body).to include(%(rel="manifest" href="/manifest.json"))
     end
   end
@@ -45,7 +45,7 @@ RSpec.describe "PWA" do
       expect(body).to match(%r{"/assets/application-\h+\.css"})
       expect(body).to match(%r{"/assets/application-\h+\.js"})
       expect(body).to include('"/offline.html"', '"/icon-192.png"', '"/icon-512.png"')
-      expect(body).not_to include("Zelda", "Quimby", "sesame", user.email_address, "patient_ids")
+      expect(body).not_to include("Zelda", "Quimby", "sesame", user.email, "patient_ids")
       shell_urls = JSON.parse(body[/const SHELL_URLS = (\[.*?\])/, 1])
       expect(shell_urls).to all(match(%r{\A/(assets/|icon-|offline\.html)}))
     end
@@ -62,7 +62,7 @@ RSpec.describe "PWA" do
 
   describe "registration" do
     it "is only on signed-in pages, with the offline caching choice" do
-      get new_session_path
+      get new_user_session_path
       expect(response.body).not_to include('data-controller="pwa"')
 
       sign_in(user)
@@ -72,7 +72,7 @@ RSpec.describe "PWA" do
     end
 
     it "puts the purge backstop on the sign-in page" do
-      get new_session_path
+      get new_user_session_path
       expect(response.body).to include('data-controller="purge"')
     end
   end
@@ -119,9 +119,9 @@ RSpec.describe "PWA" do
     end
 
     it "requires sign-in" do
-      delete session_path
+      sign_out
       patch settings_offline_path, params: { user: { offline_caching_enabled: "0" } }
-      expect(response).to redirect_to(new_session_path)
+      expect(response).to redirect_to(new_user_session_path)
       expect(user.reload.offline_caching_enabled).to be(true)
     end
   end

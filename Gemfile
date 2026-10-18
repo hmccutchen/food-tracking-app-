@@ -68,3 +68,5 @@ group :test do
   gem "vcr"
   gem "shoulda-matchers"
 end
+
+gem "devise", "~> 5.0"

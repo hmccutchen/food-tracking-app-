@@ -8,9 +8,9 @@ RSpec.describe "Patients" do
   before { sign_in(user) }
 
   it "requires sign-in" do
-    delete session_path
+    sign_out
     get patients_path
-    expect(response).to redirect_to(new_session_path)
+    expect(response).to redirect_to(new_user_session_path)
   end
 
   it "lists only the nurse's own patients" do

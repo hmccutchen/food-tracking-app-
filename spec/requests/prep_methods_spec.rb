@@ -10,9 +10,9 @@ RSpec.describe "Preparation notes page" do
   before { sign_in(user) }
 
   it "requires sign-in" do
-    delete session_path
+    sign_out
     get prep_methods_path
-    expect(response).to redirect_to(new_session_path)
+    expect(response).to redirect_to(new_user_session_path)
   end
 
   it "lists every method with its keywords, risks and lower-risk line" do
