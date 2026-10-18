@@ -1,0 +1,27 @@
+<%# Backstop: deletes any saved avoid lists left on this device. %>
+<div id="pwa_purge" hidden data-controller="purge"></div>
+<div class="auth-card">
+  <div class="auth-brand">
+    <h1 class="app-name">Meal Planner</h1>
+  </div>
+  <%= tag.div(flash[:alert], class: "flash-alert", role: "alert") if flash[:alert] %>
+  <%= tag.div(flash[:notice], class: "flash", role: "status") if flash[:notice] %>
+
+  <%= form_for resource, as: resource_name, url: session_path(resource_name) do |form| %>
+    <div class="field">
+      <%= form.label :email, "Email address" %>
+      <%= form.email_field :email, required: true, autofocus: true, autocomplete: "username" %>
+    </div>
+    <div class="field">
+      <%= form.label :password %>
+      <%= form.password_field :password, required: true, autocomplete: "current-password", maxlength: 72 %>
+    </div>
+    <div class="check-row">
+      <%= form.check_box :remember_me, checked: true %>
+      <%= form.label :remember_me, "Keep me signed in on this device" %>
+    </div>
+    <%= form.submit "Sign in" %>
+  <% end %>
+
+  <p class="auth-links">Forgot your password? Whoever set up this app can reset it from the server settings.</p>
+</div>

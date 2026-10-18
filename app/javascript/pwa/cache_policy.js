@@ -12,7 +12,7 @@ export const MAX_AVOID_LISTS = 5
 export const MAX_AGE_MS = 24 * 60 * 60 * 1000
 export const CACHED_AT_HEADER = "X-Cached-At"
 export const OFFLINE_URL = "/offline.html"
-export const SIGN_IN_PATH = "/session/new"
+export const SIGN_IN_PATH = "/users/sign_in"
 const AVOID_LIST_PATH = "/group"
 
 export function shellCacheName(version) {

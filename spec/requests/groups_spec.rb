@@ -18,9 +18,9 @@ RSpec.describe "Groups (who's eating)" do
   end
 
   it "requires sign-in" do
-    delete session_path
+    sign_out
     get group_path
-    expect(response).to redirect_to(new_session_path)
+    expect(response).to redirect_to(new_user_session_path)
   end
 
   it "lists the nurse's patients to pick from, and nobody else's" do

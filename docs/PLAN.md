@@ -18,7 +18,7 @@ never blocks her. Medications and calendars are out of scope.
 Nurse (browser / installed PWA)
   │  Turbo + Stimulus · service worker caches app shell + last avoid lists
   ▼
-Rails controllers ── Rails auth (one user)
+Rails controllers ── Devise auth (one user)
   │
   ├─ Patients & Restrictions ──► Taxonomy (nodes + aliases, pg_trgm)
   │      (encrypted fields, versioned)        ▲
@@ -57,7 +57,7 @@ Rails controllers ── Rails auth (one user)
 
 | # | Milestone | Done when |
 |---|-----------|-----------|
-| M0 | **Skeleton.** Rails 8 + Postgres + RSpec + Solid Queue, built-in auth, pg_trgm enabled, AR Encryption keys set up, CI script | Nurse can sign in; `bin/rspec` passes |
+| M0 | **Skeleton.** Rails 8 + Postgres + RSpec + Solid Queue, auth (Devise since the move off Rails' generator), pg_trgm enabled, AR Encryption keys set up, CI script | Nurse can sign in; `bin/rspec` passes |
 | M1 | **Taxonomy.** `taxonomy_nodes` (tree), `taxonomy_aliases`, seed for the top 9 allergens + common intolerances, plus a `Taxonomy::Resolver` that maps exact, alias, and fuzzy matches to a node, or returns an explicit `unresolved` result | Heavy specs: "no nuts", "tree nuts", and "almond flour" resolve to one node; fuzzy matches are marked fuzzy; gibberish comes back `unresolved`, never nil or a pass |
 | M2 | **Patients & restrictions.** CRUD with encrypted fields, restriction kinds (allergen/intolerance/condition/cannot/can), profile `version` bumped on every change | Can add and edit patients in the UI; specs for the version bump and encryption |
 | M3 | **Evaluation engine.** POROs: `Evaluation::Engine`, `PatientResult`, `GroupResult`, `Flag(tier, reason)`. Covers unresolved ingredients (→ `unknown`), missing ingredient lists, "natural flavors", fuzzy-match reasons, the "No flags found" outcome, and profile-version stamps plus `stale?` | Largest spec suite: precedence, multi-patient worst case, a "can" that doesn't override an allergy, unresolved never passes, stale detection |

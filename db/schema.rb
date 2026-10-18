@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_18_011719) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_18_195510) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -139,15 +139,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_011719) do
     t.index ["taxonomy_node_id"], name: "index_restrictions_on_taxonomy_node_id"
   end
 
-  create_table "sessions", force: :cascade do |t|
-    t.bigint "user_id", null: false
-    t.string "ip_address"
-    t.string "user_agent"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_sessions_on_user_id"
-  end
-
   create_table "taxonomy_aliases", force: :cascade do |t|
     t.bigint "taxonomy_node_id", null: false
     t.string "term", null: false
@@ -187,13 +178,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_011719) do
   end
 
   create_table "users", force: :cascade do |t|
-    t.string "email_address", null: false
-    t.string "password_digest", null: false
+    t.string "email", null: false
+    t.string "encrypted_password", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "active_provider"
     t.boolean "offline_caching_enabled", default: true, null: false
-    t.index ["email_address"], name: "index_users_on_email_address", unique: true
+    t.datetime "remember_created_at"
+    t.index ["email"], name: "index_users_on_email", unique: true
   end
 
   add_foreign_key "foods", "taxonomy_nodes", on_delete: :nullify
@@ -205,7 +197,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_011719) do
   add_foreign_key "provider_credentials", "users", on_delete: :cascade
   add_foreign_key "restrictions", "patients", on_delete: :cascade
   add_foreign_key "restrictions", "taxonomy_nodes", on_delete: :nullify
-  add_foreign_key "sessions", "users"
   add_foreign_key "taxonomy_aliases", "taxonomy_nodes", on_delete: :cascade
   add_foreign_key "taxonomy_memberships", "taxonomy_nodes", column: "group_id", on_delete: :cascade
   add_foreign_key "taxonomy_memberships", "taxonomy_nodes", column: "node_id", on_delete: :cascade

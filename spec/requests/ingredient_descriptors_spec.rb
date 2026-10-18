@@ -13,9 +13,9 @@ RSpec.describe "Descriptor words page" do
   before { sign_in(user) }
 
   it "requires sign-in" do
-    delete session_path
+    sign_out
     get ingredient_descriptors_path
-    expect(response).to redirect_to(new_session_path)
+    expect(response).to redirect_to(new_user_session_path)
   end
 
   it "is linked from the preparation notes page" do
