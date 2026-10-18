@@ -79,6 +79,10 @@ RSpec.describe "Choosing several restrictions at once in the browser", js: true 
     check "almond"
     expect(page).to have_content("1 item ticked")
 
+    # A hyphen in the search matches the space in the name, as it would on a label.
+    fill_in "Find an item", with: "sesame-oil"
+    expect(page).to have_field("sesame oil", visible: true)
+
     fill_in "Find an item", with: "zzzz"
     expect(page).to have_content("Nothing on the list matches")
     fill_in "Find an item", with: ""
