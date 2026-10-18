@@ -14,10 +14,14 @@ class MealSuggester
     # names in these scripts are matched anywhere in the text.
     UNSPACED_SCRIPT = /[\p{Han}\p{Hiragana}\p{Katakana}\p{Hangul}\p{Thai}\p{Lao}\p{Khmer}\p{Myanmar}]/
 
+    # Names and text are both put in Unicode NFC first, so "José" typed as
+    # e + combining accent still matches "José" stored with a single é.
     def self.call(text, names)
-      words = Array(names).flat_map { |name| [ name.to_s.squish, *name.to_s.split(/[\s,]+/), *name.to_s.split(/[\s,-]+/) ] }
+      text = text.to_s.unicode_normalize(:nfc)
+      names = Array(names).map { |name| name.to_s.unicode_normalize(:nfc) }
+      words = names.flat_map { |name| [ name.squish, *name.split(/[\s,]+/), *name.split(/[\s,-]+/) ] }
       words = words.map { |word| word.delete_suffix(".") }.reject(&:empty?).uniq
-      words.sort_by { |word| -word.length }.reduce(text.to_s) do |result, word|
+      words.sort_by { |word| -word.length }.reduce(text) do |result, word|
         result.gsub(pattern(word), REPLACEMENT)
       end
     end

@@ -39,6 +39,13 @@ RSpec.describe MealSuggester::Redactor do
     expect(described_class.call("Dinner for O'Brien", [ "Ann O’Brien" ])).to eq("Dinner for the patient")
   end
 
+  it "matches canonically equivalent accents (composed and decomposed)" do
+    composed = "Jos\u00e9"
+    decomposed = "Jose\u0301"
+    expect(described_class.call("Dinner for #{decomposed}", [ composed ])).to eq("Dinner for the patient")
+    expect(described_class.call("Dinner for #{composed}", [ decomposed ])).to eq("Dinner for the patient")
+  end
+
   it "does nothing without names" do
     expect(redact("soft foods", [])).to eq("soft foods")
     expect(redact("soft foods", [ "", nil ])).to eq("soft foods")
