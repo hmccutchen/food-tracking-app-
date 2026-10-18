@@ -2,14 +2,34 @@ require "rails_helper"
 
 RSpec.describe User do
   it "normalizes the email address" do
-    user = create(:user, email_address: "  Nurse@Example.COM ")
-    expect(user.email_address).to eq("nurse@example.com")
+    user = create(:user, email: "  Nurse@Example.COM ")
+    expect(user.email).to eq("nurse@example.com")
   end
 
-  it "authenticates with the right password only" do
+  it "checks the password" do
     user = create(:user)
-    expect(User.authenticate_by(email_address: user.email_address, password: "password123")).to eq(user)
-    expect(User.authenticate_by(email_address: user.email_address, password: "wrong")).to be_nil
+    expect(user.valid_password?("correct-horse-battery")).to be(true)
+    expect(user.valid_password?("wrong")).to be(false)
+  end
+
+  it "keeps working with a password hashed before the move to Devise" do
+    user = create(:user)
+    user.update_column(:encrypted_password, BCrypt::Password.create("hashed-by-has-secure-password", cost: BCrypt::Engine::MIN_COST))
+    expect(user.reload.valid_password?("hashed-by-has-secure-password")).to be(true)
+  end
+
+  it "needs a password of 12 to 72 characters" do
+    expect(build(:user, password: "a" * 11)).not_to be_valid
+    expect(build(:user, password: "a" * 12)).to be_valid
+    expect(build(:user, password: "a" * 73)).not_to be_valid
+  end
+
+  it "rejects a password longer than bcrypt's 72 bytes, counting multibyte characters" do
+    eighteen_emoji = "\u{1F600}" * 18 # 18 characters, 72 bytes
+    expect(build(:user, password: eighteen_emoji)).to be_valid
+    user = build(:user, password: "#{eighteen_emoji}x")
+    expect(user).not_to be_valid
+    expect(user.errors[:password]).to include("is too long (maximum is 72 bytes; some characters take up to 4)")
   end
 
   it "only accepts a known active provider" do

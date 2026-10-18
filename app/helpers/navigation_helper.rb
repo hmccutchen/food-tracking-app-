@@ -8,10 +8,11 @@ module NavigationHelper
     "custom_items" => :custom_items,
     "settings/ai" => :ai_settings, "settings/ai_credentials" => :ai_settings,
     "settings/offline" => :offline,
-    "prep_methods" => :prep_notes, "ingredient_descriptors" => :prep_notes
+    "prep_methods" => :prep_notes, "ingredient_descriptors" => :prep_notes,
+    "accounts" => :account
   }.freeze
 
-  MORE_SECTIONS = %i[custom_items ai_settings offline prep_notes].freeze
+  MORE_SECTIONS = %i[custom_items ai_settings offline prep_notes account].freeze
 
   def nav_section
     SECTIONS[controller_path]

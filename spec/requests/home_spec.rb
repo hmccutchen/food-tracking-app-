@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe "Home" do
   it "redirects signed-out visitors to sign in" do
     get root_path
-    expect(response).to redirect_to(new_session_path)
+    expect(response).to redirect_to(new_user_session_path)
   end
 
   it "sends the signed-in nurse to her patients" do
@@ -12,6 +12,6 @@ RSpec.describe "Home" do
     get root_path
     expect(response).to redirect_to(patients_path)
     follow_redirect!
-    expect(response.body).to include(user.email_address)
+    expect(response.body).to include(user.email)
   end
 end

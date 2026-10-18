@@ -114,7 +114,7 @@ RSpec.describe "Offline avoid lists (service worker)", js: true do
 
     click_button "Sign out"
 
-    expect(page).to have_current_path(new_session_path)
+    expect(page).to have_current_path(new_user_session_path)
   end
 
   it "deletes avoid-lists when the nurse signs out" do

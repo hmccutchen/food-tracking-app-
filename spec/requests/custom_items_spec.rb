@@ -17,9 +17,9 @@ RSpec.describe "Custom items" do
   before { sign_in(user) }
 
   it "requires sign-in" do
-    delete session_path
+    sign_out
     get custom_items_path
-    expect(response).to redirect_to(new_session_path)
+    expect(response).to redirect_to(new_user_session_path)
   end
 
   it "prefills the new form from the not-found links" do

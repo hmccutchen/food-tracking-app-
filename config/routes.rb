@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
-  resource :session
-  resources :passwords, param: :token
+  # Sign-in and sign-out only. There is no sign-up, and no reset email: the
+  # nurse account comes from db/seeds.rb (see NURSE_PASSWORD there).
+  devise_for :users, controllers: { sessions: "users/sessions" }
+  resource :account, only: %i[edit update]
   resources :patients do
     resources :restrictions, only: %i[create edit update destroy]
     # /patients/:id/choose/allergy/edit: pick many items of one kind at once.

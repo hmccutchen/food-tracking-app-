@@ -21,9 +21,9 @@ RSpec.describe "AI settings" do
   end
 
   it "requires sign-in" do
-    delete session_path
+    sign_out
     get settings_ai_path
-    expect(response).to redirect_to(new_session_path)
+    expect(response).to redirect_to(new_user_session_path)
   end
 
   it "shows the privacy note, a card per provider and the nav link" do
