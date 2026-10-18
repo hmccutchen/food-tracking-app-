@@ -1,11 +1,18 @@
 # The checklist on the "choose items" page: every taxonomy node (so saving an
 # unchanged page can never drop a restriction it didn't show), grouped into
 # sections a nurse can scan (allergens, nutrients, common food categories,
-# everything else). A group comes first, followed by everything under it;
-# ticking a group covers all of those.
+# everything else). Entries nest like the taxonomy: a group's entry holds the
+# entries it covers, so the page can show exactly what ticking it includes.
 class RestrictionPicker
   Section = Data.define(:title, :entries)
-  Entry = Data.define(:node, :covers_children)
+  Entry = Data.define(:node, :children) do
+    def covers_children = children.any?
+
+    def each_entry(&block)
+      block.call(self)
+      children.each { |child| child.each_entry(&block) }
+    end
+  end
 
   COMMON_FOOD = "common food".freeze
 
@@ -24,15 +31,15 @@ class RestrictionPicker
     common, rest = rest.partition { |root| root.name == COMMON_FOOD }
     groups, single = rest.partition { |root| @children.key?(root.id) }
 
-    sections = allergens.map { |root| section(title_for(root), tree(root)) }
-    sections << section("Nutrients", nutrients.flat_map { |root| tree(root) }) if nutrients.any?
-    sections.concat(groups.map { |root| section(title_for(root), tree(root)) })
+    sections = allergens.map { |root| section(title_for(root), [ tree(root) ]) }
+    sections << section("Nutrients", nutrients.map { |root| tree(root) }) if nutrients.any?
+    sections.concat(groups.map { |root| section(title_for(root), [ tree(root) ]) })
     common.each do |root|
       # The umbrella itself rarely makes sense, but "Match to" allows it.
-      sections << section("All common foods", [ Entry.new(node: root, covers_children: true) ])
-      sections.concat(@children.fetch(root.id, []).map { |category| section(title_for(category), tree(category)) })
+      sections << section("All common foods", [ Entry.new(node: root, children: []) ])
+      sections.concat(@children.fetch(root.id, []).map { |category| section(title_for(category), [ tree(category) ]) })
     end
-    sections << section("Other foods", single.flat_map { |root| tree(root) }) if single.any?
+    sections << section("Other foods", single.map { |root| tree(root) }) if single.any?
     sections
   end
 
@@ -43,7 +50,6 @@ class RestrictionPicker
   def title_for(node) = node.name.delete_prefix("common ").upcase_first
 
   def tree(node)
-    children = @children.fetch(node.id, [])
-    [ Entry.new(node:, covers_children: children.any?) ] + children.flat_map { |child| tree(child) }
+    Entry.new(node:, children: @children.fetch(node.id, []).map { |child| tree(child) })
   end
 end

@@ -79,6 +79,23 @@ RSpec.describe "Choosing several restrictions at once" do
     expect(patient.restrictions.reload.map(&:term)).to eq([ "egg" ])
   end
 
+  it "sums up a long change as counts, so the notice fits in the session cookie" do
+    all_ids = TaxonomyNode.pluck(:id)
+    save_list(patient, "can", [ "" ] + all_ids)
+    expect(response).to redirect_to(patient_path(patient))
+    expect(flash[:notice]).to eq("Can have: added #{all_ids.size} items.")
+    follow_redirect!
+    expect(response).to have_http_status(:ok)
+  end
+
+  it "shows a nested group's items inside it on the page" do
+    get edit_patient_restriction_selection_path(patient, "allergy")
+    cheese_item = Nokogiri::HTML(response.body).at_css("#node_#{node("cheese").id}").ancestors("li").first
+    nested = cheese_item.css("ul input[name='node_ids[]']").map { |box| box["value"].to_i }
+    expect(nested).to include(node("parmesan").id)
+    expect(nested).not_to include(node("cream").id)
+  end
+
   it "warns on the Can have list that it never hides an allergy" do
     get edit_patient_restriction_selection_path(patient, "can")
     expect(response.body).to include("Can have for", "never hides an allergy")

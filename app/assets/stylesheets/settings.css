@@ -174,9 +174,18 @@
     padding: 0;
   }
   .picker-item { margin: 0; }
-  /* A group takes a full row; its members follow it in columns. */
+  /* A group takes a full row and holds what it covers, indented with a rule
+     down the side so it's clear where the group ends. */
   .picker-group { grid-column: 1 / -1; }
-  .picker-group label { font-weight: 700; }
+  .picker-group > .check-row label { font-weight: 700; }
+  .picker-sub {
+    border-inline-start: 2px solid var(--border);
+    margin-block-end: var(--space-2);
+    margin-inline-start: 0.6rem;
+    padding-inline-start: var(--space-3);
+  }
+  /* While searching, a group whose items are all hidden shows no empty box. */
+  .picker-sub:not(:has(> li:not([hidden]))) { display: none; }
   .picker-item label small { color: var(--text-muted); display: block; font-weight: 400; }
   .picker-unmatched { margin-block-end: var(--space-4); }
 }

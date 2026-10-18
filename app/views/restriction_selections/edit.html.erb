@@ -26,7 +26,8 @@
     </div>
   </div>
 
-  <p class="help">Ticking a group (marked "and everything in it") covers every item listed under it.</p>
+  <p class="help">Ticking a group (marked "and everything indented under it") covers exactly the items
+    indented beneath it, nothing else.</p>
   <p class="picker-empty" hidden data-picker-target="empty">Nothing on the list matches. To add something that isn't
     listed, use "Add a restriction" on the patient page.</p>
 
@@ -34,18 +35,8 @@
     <fieldset class="picker-section" data-picker-target="section">
       <legend><%= section.title %></legend>
       <ul class="picker-list">
-        <% section.entries.each do |entry| %>
-          <% node = entry.node %>
-          <li class="<%= class_names("check-row picker-item", "picker-group": entry.covers_children) %>" data-picker-target="item" data-name="<%= node.name %>">
-            <%= check_box_tag "node_ids[]", node.id, selected.include?(node.id), id: "node_#{node.id}",
-                  data: { action: "change->picker#count" } %>
-            <label for="node_<%= node.id %>">
-              <%= node.name %>
-              <% if entry.covers_children %><small>and everything in it</small><% end %>
-              <% if noted.include?(node.id) %><small>has a note; unticking removes it</small><% end %>
-            </label>
-          </li>
-        <% end %>
+        <%= render partial: "restriction_selections/entry", collection: section.entries, as: :entry,
+              locals: { selected:, noted: } %>
       </ul>
     </fieldset>
   <% end %>

@@ -9,16 +9,18 @@ export default class extends Controller {
 
   filter() {
     const query = this.filterTarget.value.trim().toLowerCase()
+    // Items nest (a group holds what it covers). Children come after their
+    // group in document order, so walking backwards decides every child
+    // first; a group stays visible when it or anything inside it matches.
+    for (const item of [ ...this.itemTargets ].reverse()) {
+      const own = query === "" || ` ${item.dataset.name.toLowerCase().replace(/[-/]/g, " ")}`.includes(` ${query}`)
+      const childShown = item.querySelector(":scope > ul > li:not([hidden])") !== null
+      item.hidden = !(own || childShown)
+    }
     let anyShown = false
     for (const section of this.sectionTargets) {
-      let shown = 0
-      for (const item of section.querySelectorAll("[data-picker-target~='item']")) {
-        const match = query === "" || ` ${item.dataset.name.toLowerCase().replace(/[-/]/g, " ")}`.includes(` ${query}`)
-        item.hidden = !match
-        if (match) shown++
-      }
-      section.hidden = shown === 0
-      anyShown ||= shown > 0
+      section.hidden = section.querySelector(":scope > ul > li:not([hidden])") === null
+      anyShown ||= !section.hidden
     }
     this.emptyTarget.hidden = anyShown
   }
