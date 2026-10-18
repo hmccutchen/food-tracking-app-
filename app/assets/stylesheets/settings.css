@@ -38,7 +38,6 @@
       gap: var(--space-5);
       grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     }
-    .patient-add-restriction { position: sticky; top: calc(76px + env(safe-area-inset-top)); }
     .patient-add-restriction > h2 { margin-block-start: 0; }
   }
   .patient-restrictions > h2 { margin-block-start: var(--space-2); }
