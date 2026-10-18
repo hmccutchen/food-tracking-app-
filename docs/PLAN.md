@@ -72,14 +72,27 @@ Rails controllers ── Rails auth (one user)
 | M12 | **PWA.** Manifest, service worker, offline banner. Cached data includes restriction terms, so: cache only after sign-in, purge all caches on sign-out (and on a 401), no patient data in the manifest or the precache list. Avoid-list entries carry a cached-at timestamp; entries older than 24h are purged (checked on SW activate, on each fetch, and never served when expired). User setting `offline_caching_enabled` (default on): when off, the SW caches no patient data and deletes the `avoid-lists` cache immediately | Lighthouse "installable"; avoid list loads offline; tests that sign-out leaves caches empty, a 25h-old entry is purged and not served, and turning the setting off empties `avoid-lists` |
 
 **What the PWA cache stores (M12), exactly:**
-- `app-shell-v{n}`: layout HTML, compiled CSS and JS, icons, and the offline page. No
-  patient data.
-- `avoid-lists` (only when offline caching is on; each entry expires after 24 hours): the
-  HTML of up to 5 most recently viewed group avoid-list pages. Each one
-  holds patient display names, restriction terms, and source labels. No API keys, no
-  meal results, nothing from the AI settings pages.
-- Nothing else. Pages that change data are network-only, and so are the settings and
-  sign-in pages.
+- `app-shell-v{n}` (`n` changes whenever an asset digest does): the compiled CSS and JS
+  at their digested paths (the list is rendered into the service worker by the server),
+  the two icons, and the static `/offline.html` page. No page HTML with user data, no
+  patient data. The manifest holds no patient data either.
+- `avoid-lists` (only when offline caching is on and a signed-in page has told the
+  worker so; each entry expires after 24 hours): the HTML of up to 5 most recently viewed
+  `GET /group?...` pages, each stamped with an `X-Cached-At` header. Each one holds
+  patient display names, restriction terms, and source labels. No API keys, no meal
+  results (the "Recent meal suggestions" list loads in its own network-only frame from
+  `/meal-requests`), nothing from the settings pages.
+- Nothing else. Settings, sign-in, patients, foods, custom items, meal requests and
+  every non-GET request are network-only. Responses that are 401/403 or that end on the
+  sign-in page are never stored.
+- Expiry: expired entries are deleted on worker activate, on every fetch, on a sweep
+  message the page sends on load and every 10 minutes, and are never served (offline,
+  the worker shows `/offline.html`: "Saved lists expire after 24 hours").
+- Purge (`avoid-lists` deleted): sign-out (the button waits up to 1.5s for the worker's
+  ack), every load of the sign-in page, any fetch that gets a 401 or lands on
+  `/session/new`, and turning offline caching off (the next page load says so).
+- Signed-in HTML responses carry `Cache-Control: no-store`, so patient pages stay out
+  of the browser's HTTP cache.
 
 ## RubyLLM: should we use it?
 

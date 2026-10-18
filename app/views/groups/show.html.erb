@@ -25,6 +25,9 @@
 <% end %>
 
 <%= turbo_frame_tag "avoid_list" do %>
+  <p id="list_built_at" class="list-built-at">
+    List built at <%= time_tag @avoid_list.built_at, @avoid_list.built_at.to_fs(:short) %>
+  </p>
   <%= render "groups/avoid_list", avoid_list: @avoid_list %>
 
   <% if @selected.any? %>
@@ -65,17 +68,11 @@
     </section>
   <% end %>
 
-  <% if @meal_requests.any? || @selected.any? %>
-    <section id="recent_meal_requests" aria-labelledby="recent_meal_requests_heading">
-      <h2 id="recent_meal_requests_heading">Recent meal suggestions</h2>
-      <div id="meal_requests">
-        <% @meal_requests.each do |meal_request| %>
-          <%= render "meal_requests/meal_request", meal_request: %>
-        <% end %>
-      </div>
-      <% if @meal_requests.empty? %>
-        <p id="meal_requests_empty">No meal suggestions yet.</p>
-      <% end %>
-    </section>
+  <% if @selected.any? || @has_meal_requests %>
+    <%# Loaded separately so this page's HTML (which the service worker may
+        save for offline use) never holds meal results. %>
+    <%= turbo_frame_tag "recent_meal_requests_frame", src: meal_requests_path do %>
+      <p>Loading recent meal suggestions…</p>
+    <% end %>
   <% end %>
 <% end %>

@@ -11,12 +11,17 @@
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+    <%# The manifest holds no patient data, so every page links it. %>
+    <%= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+    <meta name="theme-color" content="#2f6f4f">
+    <% if authenticated? %>
+      <%# Turbo's in-memory page snapshots would outlive sign-out; skip them. %>
+      <meta name="turbo-cache-control" content="no-cache">
+    <% end %>
 
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="apple-touch-icon" href="/icon-192.png">
 
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
@@ -25,15 +30,21 @@
 
   <body>
     <% if authenticated? %>
+      <%# Registers the service worker (signed-in pages only) and tells it a session is active. %>
+      <div id="pwa" hidden data-controller="pwa"
+           data-pwa-offline-caching-value="<%= Current.user.offline_caching_enabled %>"></div>
+      <p id="offline_banner" class="offline-banner" role="status" hidden data-controller="offline-banner"></p>
       <nav aria-label="Main">
         <%= link_to "Patients", patients_path %>
         · <%= link_to "Foods", foods_path %>
         · <%= link_to "Custom items", custom_items_path %>
         · <%= link_to "Who's eating", group_path %>
         · <%= link_to "AI settings", settings_ai_path %>
+        · <%= link_to "Offline", settings_offline_path %>
         · <%= link_to "Preparation notes", prep_methods_path %>
         · Signed in as <%= Current.user.email_address %>
-        <%= button_to "Sign out", session_path, method: :delete, form: { style: "display:inline" } %>
+        <%= button_to "Sign out", session_path, method: :delete,
+              form: { style: "display:inline", id: "sign_out", data: { controller: "sign-out", action: "submit->sign-out#submit" } } %>
       </nav>
     <% end %>
     <% if authenticated? && notice.present? %><p role="status" class="notice"><%= notice %></p><% end %>

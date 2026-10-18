@@ -11,11 +11,12 @@ Rails.application.routes.draw do
   resource :group, only: :show do
     post :check
   end
-  resources :meal_requests, path: "meal-requests", only: %i[create show] do
+  resources :meal_requests, path: "meal-requests", only: %i[index create show] do
     post :recheck, on: :member
   end
   namespace :settings do
     resource :ai, only: %i[show update], controller: "ai"
+    resource :offline, only: %i[show update], controller: "offline"
     resources :ai_credentials, path: "ai", param: :provider, only: :update do
       post :test, on: :member
     end
@@ -28,9 +29,9 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+  # PWA files from app/views/pwa/*. Public, and free of patient data.
+  get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
+  get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Defines the root path route ("/")
   root "home#index"

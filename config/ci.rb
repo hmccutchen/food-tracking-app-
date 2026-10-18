@@ -6,6 +6,7 @@ CI.run do
   step "Style: Ruby", "bin/rubocop"
 
   step "Tests: RSpec", "bundle exec rspec"
+  step "Tests: JavaScript (PWA cache policy)", "node --test 'test/javascript/**/*.test.js'"
 
   step "Security: Gem audit", "bin/bundler-audit"
   step "Security: Importmap vulnerability audit", "bin/importmap audit"

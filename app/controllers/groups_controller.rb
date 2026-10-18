@@ -3,7 +3,10 @@
 # can be cached as is) and in the session (so coming back shows it again).
 class GroupsController < ApplicationController
   SESSION_KEY = :group_patient_ids
-  RECENT_MEAL_REQUESTS = 5
+
+  # Frame requests get the full page too, so every selection's response is a
+  # whole page the service worker can save for offline use.
+  layout "application"
 
   def show
     if !params.key?(:patient_ids) && session[SESSION_KEY].present?
@@ -41,7 +44,7 @@ class GroupsController < ApplicationController
     session[SESSION_KEY] = @selected.map(&:id)
     @names = @selected.to_h { |patient| [ patient.id, patient.display_name ] }
     @avoid_list = AvoidList.build(@selected)
-    @meal_requests = Current.user.meal_requests.recent.includes(:meal_suggestions).limit(RECENT_MEAL_REQUESTS)
+    @has_meal_requests = Current.user.meal_requests.exists?
   end
 
   # One ingredient per line, or comma-separated.

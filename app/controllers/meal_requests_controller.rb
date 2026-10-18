@@ -2,7 +2,15 @@
 # (ids only); show is what the "Finding meals…" placeholder polls when no
 # websocket is available; recheck re-runs only the engine (never the AI).
 class MealRequestsController < ApplicationController
+  RECENT = 5
+
   before_action :set_meal_request, only: %i[show recheck]
+
+  # The "Recent meal suggestions" frame on the Who's eating page. A separate,
+  # network-only request, so meal results never sit in the offline cache.
+  def index
+    @meal_requests = Current.user.meal_requests.recent.includes(:meal_suggestions).limit(RECENT)
+  end
 
   def create
     ids = Array(params[:patient_ids]).compact_blank.filter_map { |id| Integer(id, exception: false) }

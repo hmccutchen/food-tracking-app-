@@ -14,3 +14,4 @@ body { font-family: system-ui, sans-serif; line-height: 1.45; margin: 0 auto; ma
 .provider-card { border: 1px solid #ccc; border-radius: 6px; margin: 1rem 0; padding: 0 1rem 1rem; }
 .alert { color: #8a1c1c; }
 .privacy-note { background: #f4f4f4; padding: .5rem; }
+.offline-banner { background: #fff4d6; border: 1px solid #c9a227; padding: .5rem; }

@@ -87,8 +87,12 @@ RSpec.describe "Meal requests" do
       create(:meal_request, patient_ids: [ stranger.id ], status: "failed", error_message: "Not yours")
 
       get group_path(patient_ids: [ ann.id ])
-
       expect(response.body).to include("Suggest meals", "What kind of meal?")
+      # The list loads in its own frame, so the (cacheable) group page holds no meal results.
+      expect(response.body).to include('id="recent_meal_requests_frame"', 'src="/meal-requests"')
+      expect(response.body).not_to include("Error number")
+
+      get meal_requests_path, headers: { "Turbo-Frame" => "recent_meal_requests_frame" }
       shown = response.body.scan(/Error number \d/)
       expect(shown).to eq((0..4).map { |index| "Error number #{index}" })
       expect(response.body).not_to include("Not yours", dom_id_for(requests.last))
