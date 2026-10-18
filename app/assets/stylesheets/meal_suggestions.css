@@ -1,0 +1,16 @@
+/* Suggest meals: requests, meal cards, dropped meals. Tier is always in words. */
+.meal-request { border-top: 2px solid #ccc; display: block; margin: 1rem 0; padding-top: 0.5rem; }
+.meal-request-meta { color: #555; font-size: 0.9em; }
+.finding-meals { font-style: italic; }
+.meal-card { border: 1px solid #ccc; border-left: 6px solid #999; border-radius: 0.3rem; margin: 0.75rem 0; padding: 0.25rem 0.75rem; }
+.meal-card[data-tier="conflict"] { border-left-color: #b00020; }
+.meal-card[data-tier="possible_conflict"] { border-left-color: #b26a00; }
+.meal-card-failed { border-left-color: #b00020; }
+.meal-ingredients-label { margin-bottom: 0; }
+.meal-ingredients { margin-top: 0.2rem; }
+.now-conflict { background: #fde7ea; border: 2px solid #8a0018; color: #8a0018; padding: 0.3rem; }
+.ai-prep-notes { border-top: 1px dashed #ccc; color: #333; margin-top: 0.5rem; }
+.ai-prep-label { font-size: 0.9em; font-weight: bold; margin-bottom: 0; }
+.meal-request-stale { margin: 0.5rem 0; }
+.dropped-meals summary { cursor: pointer; padding: 0.3rem 0; }
+.dropped-reasons { color: #8a0018; }

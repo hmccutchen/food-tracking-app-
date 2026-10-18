@@ -1,0 +1,21 @@
+<% content_for :title, @patient.display_name %>
+<h1><%= @patient.display_name %></h1>
+<p><%= render "patients/profile_version", patient: @patient %></p>
+
+<% if @patient.notes.present? %>
+  <p><%= simple_format(@patient.notes) %></p>
+<% end %>
+
+<p>
+  <%= link_to "Edit patient", edit_patient_path(@patient) %>
+  ·
+  <%= button_to "Delete patient", @patient, method: :delete, form: { data: { turbo_confirm: "Delete #{@patient.display_name} and all their restrictions?" }, style: "display:inline" } %>
+</p>
+
+<h2>Restrictions</h2>
+<%= render "restrictions/list", patient: @patient %>
+
+<h2>Add a restriction</h2>
+<%= render "restrictions/form", patient: @patient, restriction: @restriction %>
+
+<p><%= link_to "Back to patients", patients_path %></p>

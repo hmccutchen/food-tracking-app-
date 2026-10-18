@@ -1,0 +1,3 @@
+<% content_for :title, "Edit custom item" %>
+<h1>Edit custom item: <%= @item.node.name_was.presence || @item.name %></h1>
+<%= render "form", item: @item %>

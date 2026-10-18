@@ -1,0 +1,15 @@
+<% content_for :title, "Offline" %>
+<h1>Offline</h1>
+
+<p>When this is on, the last 5 avoid lists you open are saved on this device for up to 24 hours,
+  so you can still read them without a connection. Signing out deletes them.</p>
+
+<p class="privacy-note" id="offline_privacy_note">Saved avoid lists contain restriction terms and patient names. Turn this off on shared devices.</p>
+
+<%= form_with model: Current.user, url: settings_offline_path, method: :patch, id: "offline_settings" do |form| %>
+  <p>
+    <%= form.check_box :offline_caching_enabled %>
+    <%= form.label :offline_caching_enabled, "Save avoid lists for offline use" %>
+  </p>
+  <p><%= form.submit "Save" %></p>
+<% end %>

@@ -1,0 +1,30 @@
+<% content_for :title, "Foods" %>
+<h1>Foods</h1>
+
+<%= form_with url: foods_path, method: :get, role: "search",
+      data: { turbo_frame: "food_results", turbo_action: "advance" } do |form| %>
+  <%= form.label :q, "Search USDA foods" %>
+  <%= form.search_field :q, value: @query, placeholder: "e.g. almonds, cheddar", autocomplete: "off" %>
+  <%= form.submit "Search", name: nil %>
+<% end %>
+
+<%= turbo_frame_tag "food_results" do %>
+  <% if @food_count.zero? %>
+    <p>No USDA foods imported yet. Run <code>bin/rails usda:import</code>.</p>
+  <% elsif @query.blank? %>
+    <p>Search <%= pluralize(@food_count, "USDA food") %>. Typos are OK.</p>
+  <% elsif @foods.empty? %>
+    <p>No foods found for “<%= @query %>”.</p>
+  <% else %>
+    <p><%= pluralize(@foods.size, "result") %> for “<%= @query %>”, closest first.</p>
+    <ul id="foods">
+      <% @foods.each do |food| %>
+        <%= render food %>
+      <% end %>
+    </ul>
+  <% end %>
+  <% if @query.present? %>
+    <p class="not-found">Not here?
+      <%= link_to "Add it as a custom item", new_custom_item_path(name: @query), data: { turbo_frame: "_top" } %></p>
+  <% end %>
+<% end %>

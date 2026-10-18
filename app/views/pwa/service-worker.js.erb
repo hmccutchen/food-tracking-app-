@@ -1,0 +1,172 @@
+// Meal Planner service worker (a module worker; see app/javascript/controllers/pwa_controller.js).
+// The cache rules live in app/javascript/pwa/cache_policy.js, which Node's test runner checks.
+//
+// Exactly two caches:
+//   app-shell-v<N>  the files listed below: compiled CSS/JS, icons, the offline page. No patient data.
+//   avoid-lists     up to 5 recent GET /group pages, each stamped with X-Cached-At and dropped after 24 hours.
+// Everything else is network-only. Nothing is cached until a signed-in page says so.
+import * as policy from "<%= asset_path("pwa/cache_policy.js") %>"
+
+const SHELL_CACHE = policy.shellCacheName(<%= pwa_shell_version %>)
+const SHELL_URLS = <%= raw pwa_shell_urls.to_json %>
+const AVOID = policy.AVOID_LISTS_CACHE
+
+// Starts signed out; only a page's {type: "session"} message turns caching on.
+let state = policy.initialState()
+// Bumped on every purge, so a store that races a purge is thrown away.
+let generation = 0
+
+self.addEventListener("install", (event) => {
+  event.waitUntil((async () => {
+    const cache = await caches.open(SHELL_CACHE)
+    await cache.addAll(SHELL_URLS)
+    await self.skipWaiting()
+  })())
+})
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil((async () => {
+    const names = await caches.keys()
+    await Promise.all(names.filter((name) => name !== SHELL_CACHE && name !== AVOID).map((name) => caches.delete(name)))
+    await sweep()
+    await self.clients.claim()
+  })())
+})
+
+self.addEventListener("message", (event) => {
+  const message = event.data || {}
+  const port = event.ports && event.ports[0]
+  event.waitUntil((async () => {
+    if (message.type === "sweep") {
+      const removed = await sweep()
+      if (port) port.postMessage({ type: "swept", removed })
+      return
+    }
+    const result = policy.applyMessage(state, message)
+    state = result.state
+    if (result.purge) await purge()
+    if (port) port.postMessage({ type: "ack", for: message.type, state })
+  })())
+})
+
+self.addEventListener("fetch", (event) => {
+  const request = event.request
+  const url = new URL(request.url)
+  if (url.origin !== self.location.origin) return
+
+  event.waitUntil(sweep())
+
+  if (request.method === "GET" && SHELL_URLS.includes(url.pathname)) {
+    event.respondWith(fromShell(request))
+  } else if (policy.isCacheableRequest(request.url, request.method, self.location.origin)) {
+    event.respondWith(avoidList(request))
+  } else {
+    event.respondWith(networkOnly(request))
+  }
+})
+
+async function fromShell(request) {
+  const cached = await caches.match(request, { cacheName: SHELL_CACHE })
+  return cached || fetch(request)
+}
+
+// Network first. Offline, a saved copy is served only while it is under 24 hours old.
+async function avoidList(request) {
+  let response
+  try {
+    response = await fetch(request)
+  } catch (_error) {
+    return savedOrOffline(request)
+  }
+  await afterNetwork(request, response)
+  if (policy.mayCache(state) && policy.isCacheableResponse(response)) {
+    await store(response.redirected ? response.url : request.url, response.clone())
+  }
+  return response
+}
+
+async function networkOnly(request) {
+  let response
+  try {
+    response = await fetch(request)
+  } catch (error) {
+    if (request.mode === "navigate") return offlinePage()
+    throw error
+  }
+  await afterNetwork(request, response)
+  return response
+}
+
+// A 401, or landing on the sign-in page, means the session is over.
+async function afterNetwork(request, response) {
+  if (policy.shouldPurgeFor(response, request.url)) {
+    state = policy.initialState()
+    await purge()
+  }
+}
+
+async function store(url, response) {
+  const startedAt = generation
+  const headers = new Headers(response.headers)
+  headers.set(policy.CACHED_AT_HEADER, new Date().toISOString())
+  headers.delete("Vary")
+  const body = await response.blob()
+  const stamped = new Response(body, { status: response.status, statusText: response.statusText, headers })
+  if (startedAt !== generation || !policy.mayCache(state)) return
+  const cache = await caches.open(AVOID)
+  await cache.put(url, stamped)
+  if (startedAt !== generation || !policy.mayCache(state)) {
+    await purge()
+    return
+  }
+  await sweep()
+}
+
+async function savedOrOffline(request) {
+  if (!(await caches.has(AVOID))) return offlinePage()
+  const cache = await caches.open(AVOID)
+  let saved = await cache.match(request.url, { ignoreVary: true })
+  if (!saved && new URL(request.url).search === "") saved = await newestSaved(cache)
+  if (!saved) return offlinePage()
+  if (policy.isExpired(saved.headers.get(policy.CACHED_AT_HEADER), Date.now())) {
+    await sweep()
+    return offlinePage()
+  }
+  return saved
+}
+
+// Opening the app at /group offline shows the most recent saved list.
+async function newestSaved(cache) {
+  const entries = await readEntries(cache)
+  const [ newest ] = policy.trimToNewest(entries.filter((entry) => !policy.isExpired(entry.cachedAt, Date.now())), 1)
+  return newest ? cache.match(newest.url, { ignoreVary: true }) : undefined
+}
+
+async function offlinePage() {
+  const page = await caches.match(policy.OFFLINE_URL, { cacheName: SHELL_CACHE })
+  return page || new Response("You're offline. Saved lists expire after 24 hours.", {
+    status: 503, headers: { "Content-Type": "text/plain; charset=utf-8" }
+  })
+}
+
+async function readEntries(cache) {
+  const requests = await cache.keys()
+  return Promise.all(requests.map(async (request) => {
+    const response = await cache.match(request, { ignoreVary: true })
+    return { url: request.url, cachedAt: response && response.headers.get(policy.CACHED_AT_HEADER) }
+  }))
+}
+
+// Drops expired entries and anything beyond the newest 5.
+async function sweep() {
+  if (!(await caches.has(AVOID))) return 0
+  const cache = await caches.open(AVOID)
+  const urls = policy.entriesToDelete(await readEntries(cache), Date.now())
+  await Promise.all(urls.map((url) => cache.delete(url)))
+  return urls.length
+}
+
+async function purge() {
+  generation += 1
+  await caches.delete(AVOID)
+}

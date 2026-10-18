@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Meal Planner" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Meal Planner">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <%# The manifest holds no patient data, so every page links it. %>
+    <%= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+    <meta name="theme-color" content="#2f6f4f">
+    <% if authenticated? %>
+      <%# Turbo's in-memory page snapshots would outlive sign-out; skip them. %>
+      <meta name="turbo-cache-control" content="no-cache">
+    <% end %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+
+    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body>
+    <% if authenticated? %>
+      <%# Registers the service worker (signed-in pages only) and tells it a session is active. %>
+      <div id="pwa" hidden data-controller="pwa"
+           data-pwa-offline-caching-value="<%= Current.user.offline_caching_enabled %>"></div>
+      <p id="offline_banner" class="offline-banner" role="status" hidden data-controller="offline-banner"></p>
+      <nav aria-label="Main">
+        <%= link_to "Patients", patients_path %>
+        · <%= link_to "Foods", foods_path %>
+        · <%= link_to "Custom items", custom_items_path %>
+        · <%= link_to "Who's eating", group_path %>
+        · <%= link_to "AI settings", settings_ai_path %>
+        · <%= link_to "Offline", settings_offline_path %>
+        · <%= link_to "Preparation notes", prep_methods_path %>
+        · Signed in as <%= Current.user.email_address %>
+        <%= button_to "Sign out", session_path, method: :delete,
+              form: { style: "display:inline", id: "sign_out", data: { controller: "sign-out", action: "submit->sign-out#submit" } } %>
+      </nav>
+    <% end %>
+    <% if authenticated? && notice.present? %><p role="status" class="notice"><%= notice %></p><% end %>
+    <main>
+      <%= yield %>
+    </main>
+  </body>
+</html>

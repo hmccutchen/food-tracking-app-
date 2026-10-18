@@ -1,0 +1,29 @@
+/* Who's eating / avoid list / evaluation results. Plain and phone-friendly.
+   Tier is always written out in words; color is only a hint. */
+
+
+.patient-picker { list-style: none; padding: 0; }
+.patient-picker li { padding: 0.35rem 0; }
+.patient-picker input { transform: scale(1.3); margin-right: 0.5rem; }
+
+.avoid-section { border-left: 4px solid #999; margin: 1rem 0; padding-left: 0.75rem; }
+.avoid-section[data-section="avoid"] { border-color: #b00020; }
+.avoid-section[data-section="limit"] { border-color: #b26a00; }
+.avoid-section[data-section="ok"] { border-color: #777; color: #555; }
+.avoid-entry { margin-bottom: 0.5rem; }
+.hint, .match-note, .section-note, .avoid-list-meta { color: #555; font-size: 0.9em; }
+.needs { margin: 0.2rem 0; }
+
+textarea { box-sizing: border-box; font: inherit; width: 100%; }
+
+.tier-badge { border: 2px solid currentColor; border-radius: 0.3rem; display: inline-block; font-weight: bold; padding: 0.05rem 0.4rem; }
+.tier-badge[data-tier="conflict"] { background: #fde7ea; color: #8a0018; }
+.tier-badge[data-tier="possible_conflict"] { background: #fff1db; color: #7a4700; }
+.tier-badge[data-tier="unknown"] { background: #eceff3; color: #333c47; }
+.tier-badge[data-tier="none"] { background: #e9f5ec; color: #1d5c2e; }
+
+.patient-result { border-top: 1px solid #ddd; padding-top: 0.5rem; }
+.patient-result h3 { font-size: 1.05rem; }
+.marked-ok { color: #666; font-size: 0.9em; }
+.marked-ok p { font-style: italic; margin-bottom: 0; }
+.stale { background: #fff1db; border: 2px dashed #7a4700; font-weight: bold; padding: 0.4rem; }

@@ -1,0 +1,39 @@
+<%# locals: (avoid_list:) %>
+<section id="avoid_list_content" class="avoid-list" aria-labelledby="avoid_list_heading">
+  <h2 id="avoid_list_heading">Avoid list</h2>
+  <% if avoid_list.patient_names.empty? %>
+    <p>Pick at least one patient to see their combined avoid list.</p>
+  <% else %>
+    <p class="avoid-list-meta">
+      For <%= avoid_list.patient_names.to_sentence %>.
+      Built <%= time_tag avoid_list.built_at, avoid_list.built_at.to_fs(:short) %>.
+    </p>
+    <% if avoid_list.empty? %>
+      <p>No restrictions recorded for these patients.</p>
+    <% end %>
+    <% avoid_list.sections.each do |section| %>
+      <% next if section.empty? %>
+      <section id="avoid_section_<%= section.key %>" class="avoid-section" data-section="<%= section.key %>"
+               aria-labelledby="avoid_section_<%= section.key %>_heading">
+        <h3 id="avoid_section_<%= section.key %>_heading"><%= section.title %></h3>
+        <% if section.note %><p class="section-note"><%= section.note %></p><% end %>
+        <ul>
+          <% section.entries.each do |entry| %>
+            <li class="avoid-entry">
+              <strong><%= entry.label %></strong>
+              <% if entry.hint %><span class="hint">(<%= entry.hint %>)</span><% end %>
+              <ul class="needs">
+                <% entry.needs.each do |need| %>
+                  <li>
+                    <%= need.patient_name %> — <%= Restriction::KIND_LABELS.fetch(need.kind).last.downcase %>
+                    <% if need.match_note %><span class="match-note">(<%= need.match_note %>)</span><% end %>
+                  </li>
+                <% end %>
+              </ul>
+            </li>
+          <% end %>
+        </ul>
+      </section>
+    <% end %>
+  <% end %>
+</section>

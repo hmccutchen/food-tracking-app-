@@ -1,0 +1,67 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
+    body:
+      encoding: UTF-8
+      string: '{"contents":[{"role":"user","parts":[{"text":"Suggest 3 different meals
+        for this request: Warm dinner for the patient and the patient, something soft.
+        the patient likes fish.\n\nLeave these out entirely. Do not use them, or any
+        ingredient that contains them or is made from them:\n- milk\n- peanut\n- sodium\n\nAn
+        earlier suggestion was dropped because it used these. Do not use them either:\n-
+        butter\n\nReply with JSON only, no other text, in exactly this shape:\n{\"meals\":[{\"dish\":\"...\",\"ingredients\":[\"...\"],\"prep_notes\":[\"...\"]}]}\n\n-
+        \"dish\" is the meal''s name.\n- \"ingredients\" lists every ingredient, one
+        per array element. Name each one specifically, for example \"low-sodium soy
+        sauce\", not \"sauce\".\n- \"prep_notes\" are short preparation tips. Use
+        [] if there are none.\n"}]}],"generationConfig":{"responseMimeType":"application/json","responseJsonSchema":{"type":"object","properties":{"meals":{"type":"array","items":{"type":"object","properties":{"dish":{"type":"string"},"ingredients":{"type":"array","items":{"type":"string"}},"prep_notes":{"type":"array","items":{"type":"string"}}},"required":["dish","ingredients","prep_notes"],"additionalProperties":false}}},"required":["meals"],"additionalProperties":false}}}'
+    headers:
+      X-Goog-Api-Key:
+      - "<GEMINI_API_KEY>"
+      Content-Type:
+      - application/json
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json; charset=UTF-8
+      Vary:
+      - Origin, X-Origin, Referer
+      Server:
+      - scaffolding on HTTPServer2
+    body:
+      encoding: UTF-8
+      string: |-
+        {
+          "candidates": [
+            {
+              "content": {
+                "parts": [
+                  {
+                    "text": "{\"meals\":[{\"name\":\"Chicken soup\",\"ingredients\":\"chicken, carrots, rice\"}]}"
+                  }
+                ],
+                "role": "model"
+              },
+              "finishReason": "STOP",
+              "index": 0
+            }
+          ],
+          "usageMetadata": {
+            "promptTokenCount": 214,
+            "candidatesTokenCount": 236,
+            "totalTokenCount": 450,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 214
+              }
+            ]
+          },
+          "modelVersion": "gemini-2.5-flash",
+          "responseId": "lQPxaLG0MK2Wz7IP7NqY4Ac"
+        }
+  recorded_at: Fri, 16 Oct 2026 15:04:05 GMT
+recorded_with: VCR 6.4.0 (hand-authored, see spec/cassettes/README.md)

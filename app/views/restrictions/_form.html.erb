@@ -1,0 +1,36 @@
+<%# Shared by the inline add form and the inline edit form. %>
+<% frame_id = restriction.new_record? ? "new_restriction" : dom_id(restriction) %>
+<%= turbo_frame_tag frame_id do %>
+  <%= form_with model: [ patient, restriction ], id: "#{frame_id}_form" do |form| %>
+    <%= render "shared/errors", record: restriction %>
+
+    <p>
+      <%= form.label :kind, "Kind", for: "#{frame_id}_kind" %><br>
+      <%= form.select :kind, Restriction::KIND_LABELS.map { |kind, (_, option)| [ option, kind ] },
+            {}, id: "#{frame_id}_kind" %>
+    </p>
+
+    <p>
+      <%= form.label :term, "What (in your words)", for: "#{frame_id}_term" %><br>
+      <%= form.text_field :term, id: "#{frame_id}_term", required: true, autocomplete: "off" %>
+    </p>
+
+    <p>
+      <%= form.label :note, "Note (optional)", for: "#{frame_id}_note" %><br>
+      <%= form.text_field :note, id: "#{frame_id}_note", autocomplete: "off" %>
+    </p>
+
+    <p>
+      <%= form.label :manual_node_id, "Match to (optional)", for: "#{frame_id}_manual_node_id" %><br>
+      <%= form.collection_select :manual_node_id, TaxonomyNode.order(:name), :id, :name,
+            { include_blank: "Match automatically" }, id: "#{frame_id}_manual_node_id" %>
+    </p>
+
+    <p>
+      <%= form.submit restriction.new_record? ? "Add restriction" : "Save restriction" %>
+      <% unless restriction.new_record? %>
+        <%= link_to "Cancel", patient_path(patient) %>
+      <% end %>
+    </p>
+  <% end %>
+<% end %>

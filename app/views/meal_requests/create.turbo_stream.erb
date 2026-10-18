@@ -1,0 +1,2 @@
+<%= turbo_stream.remove "meal_requests_empty" %>
+<%= turbo_stream.prepend "meal_requests", partial: "meal_requests/meal_request", locals: { meal_request: @meal_request } %>

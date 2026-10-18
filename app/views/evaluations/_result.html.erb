@@ -1,0 +1,62 @@
+<%# Reusable result card body (M11 meal cards render it too). result is an
+    Evaluation::GroupResult; patients maps patient_id to a display name or Patient. %>
+<%# locals: (result:, patients: {}, prep_notes: [], cross_contact: nil, custom_item_links: true) %>
+<%# custom_item_links: next to each UNKNOWN flag for an unrecognized ingredient,
+    link to "Add as custom item" prefilled with that ingredient. %>
+<%# prep_notes (PrepNotes::Note) and cross_contact are advisory: shown under the
+    tier, never part of it. %>
+<div class="evaluation-result" data-tier="<%= result.tier %>">
+  <% if result.stale? %>
+    <p class="stale" role="alert">Out of date — re-check</p>
+  <% end %>
+  <p class="overall">Overall: <%= tier_badge(result.tier) %></p>
+  <% if cross_contact.present? %>
+    <p class="cross-contact"><%= cross_contact %></p>
+  <% end %>
+  <% prep_notes.each do |note| %>
+    <aside class="prep-note" data-controller="dismiss" data-dismiss-key-value="<%= note.key %>"
+           aria-label="Preparation note (advisory): <%= note.method_name %>">
+      <p class="prep-note-label">Preparation note (advisory): <strong><%= note.method_name %></strong></p>
+      <p><%= note.risk %> <span class="prep-note-terms">Relevant to: <%= note.terms.to_sentence %>.</span></p>
+      <p class="lower-risk"><%= note.lower_risk_line %></p>
+      <button type="button" class="dismiss" data-action="dismiss#dismiss">Dismiss note</button>
+    </aside>
+  <% end %>
+  <% if result.patient_results.empty? %>
+    <p><%= result.summary %></p>
+  <% end %>
+  <% if result.missing_patient_ids.any? %>
+    <p><%= pluralize(result.missing_patient_ids.size, "selected patient") %> no longer on file.</p>
+  <% end %>
+
+  <% result.patient_results.each do |patient_result| %>
+    <section class="patient-result" data-tier="<%= patient_result.tier %>">
+      <h3>
+        <%= evaluation_patient_name(patients, patient_result.patient_id) %>:
+        <%= tier_badge(patient_result.tier) %>
+      </h3>
+      <% if patient_result.active_flags.any? %>
+        <ul class="flags">
+          <% patient_result.active_flags.each do |flag| %>
+            <li data-tier="<%= flag.tier %>"><%= tier_label(flag.tier) %>: <%= ai_text(flag.reason) %>
+              <% if custom_item_links && flag.source == :unresolved && flag.ingredient.present? %>
+                <%= link_to "Add as custom item", new_custom_item_path(name: flag.ingredient),
+                      class: "add-custom-item", data: { turbo_frame: "_top" } %>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+      <% if patient_result.overridden_flags.any? %>
+        <div class="marked-ok">
+          <p>You marked this OK</p>
+          <ul>
+            <% patient_result.overridden_flags.each do |flag| %>
+              <li><%= ai_text(flag.reason) %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+    </section>
+  <% end %>
+</div>

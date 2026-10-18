@@ -1,0 +1,32 @@
+<%# A kept meal. The tier and flags are the stored engine result; the
+    preparation notes and cross-contact line are recomputed for display and
+    are advisory only. AI prep notes are the provider's words, labelled so. %>
+<%# locals: (suggestion:, names:, patient_ids:, provider_name:) %>
+<article id="<%= dom_id(suggestion) %>" class="meal-card" data-tier="<%= suggestion.tier %>">
+  <h4><%= ai_text(suggestion.dish) %></h4>
+  <% if suggestion.now_conflict? %>
+    <p class="now-conflict" role="alert"><strong>Now a conflict</strong> — found when re-checked</p>
+  <% end %>
+  <% if suggestion.ingredients.any? %>
+    <p class="meal-ingredients-label">Ingredients:</p>
+    <ul class="meal-ingredients">
+      <% suggestion.ingredients.each do |ingredient| %>
+        <li><%= ai_text(ingredient) %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <%= render "evaluations/result", result: suggestion.group_result, patients: names,
+        prep_notes: meal_prep_notes(suggestion, patient_ids), cross_contact: PrepNotes.cross_contact_line(patient_ids) %>
+
+  <% if suggestion.prep_notes.any? %>
+    <section class="ai-prep-notes">
+      <p class="ai-prep-label">Suggested preparation (from <%= provider_name %>)</p>
+      <ul>
+        <% suggestion.prep_notes.each do |note| %>
+          <li><%= ai_text(note) %></li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+</article>
