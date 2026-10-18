@@ -28,6 +28,12 @@ RSpec.describe MealSuggester::Redactor do
     expect(described_class.call("Snack for Jane Smith", names)).not_to match(/jane|smith|mary/i)
   end
 
+  it "redacts names in scripts written without spaces, even when joined to other words" do
+    expect(described_class.call("给李做晚饭", [ "李" ])).to eq("给the patient做晚饭")
+    expect(described_class.call("晚饭给王小明", [ "王小明" ])).to eq("晚饭给the patient")
+    expect(described_class.call("민수에게 저녁", [ "민수" ])).to eq("the patient에게 저녁")
+  end
+
   it "does nothing without names" do
     expect(redact("soft foods", [])).to eq("soft foods")
     expect(redact("soft foods", [ "", nil ])).to eq("soft foods")

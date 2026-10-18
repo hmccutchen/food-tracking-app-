@@ -9,13 +9,23 @@ class MealSuggester
   # the request. A worse suggestion beats a name leaving the app.
   module Redactor
     REPLACEMENT = "the patient".freeze
+    # Scripts written without spaces between words, or with particles joined
+    # straight onto names (Korean). Whole-word matching never fires there, so
+    # names in these scripts are matched anywhere in the text.
+    UNSPACED_SCRIPT = /[\p{Han}\p{Hiragana}\p{Katakana}\p{Hangul}\p{Thai}\p{Lao}\p{Khmer}\p{Myanmar}]/
 
     def self.call(text, names)
       words = Array(names).flat_map { |name| [ name.to_s.squish, *name.to_s.split(/[\s,]+/), *name.to_s.split(/[\s,-]+/) ] }
       words = words.map { |word| word.delete_suffix(".") }.reject(&:empty?).uniq
       words.sort_by { |word| -word.length }.reduce(text.to_s) do |result, word|
-        result.gsub(/(?<![[:alnum:]])#{Regexp.escape(word)}(?![[:alnum:]])/i, REPLACEMENT)
+        result.gsub(pattern(word), REPLACEMENT)
       end
+    end
+
+    def self.pattern(word)
+      return /#{Regexp.escape(word)}/i if word.match?(UNSPACED_SCRIPT)
+
+      /(?<![[:alnum:]])#{Regexp.escape(word)}(?![[:alnum:]])/i
     end
   end
 end
