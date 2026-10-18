@@ -17,6 +17,17 @@ RSpec.describe MealSuggester::Redactor do
     expect(redact("for J.R.", [ "J.R." ])).to eq("for the patient.")
   end
 
+  it "redacts single-letter names" do
+    expect(described_class.call("Dinner for Q, no nuts", [ "Q" ])).to eq("Dinner for the patient, no nuts")
+  end
+
+  it "redacts each part of a hyphenated name, and the hyphenated name itself" do
+    names = [ "Mary-Jane Smith" ]
+    expect(described_class.call("Dinner for Mary", names)).to eq("Dinner for the patient")
+    expect(described_class.call("Lunch for Mary-Jane", names)).to eq("Lunch for the patient")
+    expect(described_class.call("Snack for Jane Smith", names)).not_to match(/jane|smith|mary/i)
+  end
+
   it "does nothing without names" do
     expect(redact("soft foods", [])).to eq("soft foods")
     expect(redact("soft foods", [ "", nil ])).to eq("soft foods")
