@@ -122,6 +122,9 @@ export default class extends Controller {
       button.className = "tag-remove"
       button.textContent = "×"
       button.setAttribute("aria-label", `Remove ${tag}`)
+      // Keep focus in the entry box: a blur would commit a half-typed item and
+      // redraw the chips before this click lands, so it would miss.
+      button.addEventListener("mousedown", (event) => event.preventDefault())
       button.addEventListener("click", () => this.remove(index))
       item.append(text, button)
       return item

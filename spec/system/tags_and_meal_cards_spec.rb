@@ -15,8 +15,13 @@ RSpec.describe "Tag inputs and removable meal cards", js: true do
     expect(page).to have_css(".tag", text: "granny soup")
     find_field("Other names (optional)").send_keys("tuesday soup", :enter)
     expect(page).to have_css(".tag", text: "sunday soup").and have_css(".tag", text: "tuesday soup")
+    # With a half-typed item in the box, clicking a chip's × must still remove that chip.
+    find_field("Other names (optional)").send_keys("half typed")
     find("button[aria-label='Remove sunday soup']").click
     expect(page).to have_no_css(".tag", text: "sunday soup")
+    find_field("Other names (optional)").send_keys(:enter)
+    expect(page).to have_css(".tag", text: "half typed")
+    find("button[aria-label='Remove half typed']").click
 
     # A label pasted in one go: commas inside brackets stay with their item.
     fill_in "Ingredients (optional, as on the label)", with: "wheat flour (enriched, niacin), salt, "

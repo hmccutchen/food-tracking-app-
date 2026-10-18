@@ -2,10 +2,11 @@
 <section id="recent_meal_requests" class="recent-meals" aria-labelledby="recent_meal_requests_heading">
   <div class="recent-meals-header">
     <h2 id="recent_meal_requests_heading">Recent meal suggestions</h2>
-    <% if meal_requests.any?(&:finished?) %>
-      <%= button_to "Clear all", clear_meal_requests_path, method: :delete, class: "btn btn-secondary btn-small",
-            form: { data: { turbo_confirm: "Remove all finished meal suggestions?" } } %>
-    <% end %>
+    <%# Always present (hidden by CSS while the list is empty), so it shows up as
+        soon as a card is added; clearing leaves cards still finding meals. %>
+    <%= button_to "Clear all", clear_meal_requests_path, method: :delete, class: "btn btn-secondary btn-small",
+          form_class: "clear-meal-requests",
+          form: { data: { turbo_confirm: "Remove all finished meal suggestions?" } } %>
   </div>
   <div id="meal_requests">
     <% meal_requests.each do |meal_request| %>

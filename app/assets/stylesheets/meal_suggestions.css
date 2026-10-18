@@ -8,6 +8,7 @@
     margin-block-end: var(--space-3);
   }
   .recent-meals-header h2 { margin: 0; }
+  .recent-meals:not(:has(.meal-request)) .clear-meal-requests { display: none; }
   #recent_meal_requests_frame { display: block; }
 
   .meal-request {

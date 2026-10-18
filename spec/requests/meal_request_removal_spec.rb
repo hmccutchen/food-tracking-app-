@@ -10,7 +10,7 @@ RSpec.describe "Removing meal suggestion cards" do
     create(:meal_request, user:, status: "found", **attrs).tap { |request| create(:meal_suggestion, meal_request: request) }
   end
 
-  it "shows Remove on finished cards and Clear all on the list, but not on a card still finding meals" do
+  it "shows Remove on finished cards but not on a card still finding meals, and always includes Clear all" do
     finished = finished_request
     pending = create(:meal_request, user:, status: "queued")
     get meal_requests_path
@@ -24,13 +24,32 @@ RSpec.describe "Removing meal suggestion cards" do
     finished = finished_request
     other = finished_request
     expect { delete meal_request_path(finished), headers: turbo_stream }.to change(MealSuggestion, :count).by(-1)
-    expect(response.body).to include(%(action="remove" target="#{ActionView::RecordIdentifier.dom_id(finished)}"))
+    expect(response.body).to include(%(action="replace" target="recent_meal_requests"))
+    expect(response.body).to include(ActionView::RecordIdentifier.dom_id(other))
+    expect(response.body).not_to include(%(id="#{ActionView::RecordIdentifier.dom_id(finished)}"))
     expect(MealRequest.where(id: [ finished.id, other.id ]).pluck(:id)).to eq([ other.id ])
+  end
+
+  # The list shows the 5 newest; removing one must bring the 6th into view.
+  it "fills the freed slot with the next older card" do
+    oldest = finished_request(created_at: 1.hour.ago)
+    newer = Array.new(MealRequestsController::RECENT) { finished_request }
+    get meal_requests_path
+    expect(response.body).not_to include(ActionView::RecordIdentifier.dom_id(oldest))
+
+    delete meal_request_path(newer.last), headers: turbo_stream
+    expect(response.body).to include(%(id="#{ActionView::RecordIdentifier.dom_id(oldest)}"))
   end
 
   it "shows the empty state when the last card goes" do
     delete meal_request_path(finished_request), headers: turbo_stream
     expect(response.body).to include("No meal suggestions yet.")
+  end
+
+  it "includes Clear all even when no card has finished yet, so it is there once one does" do
+    create(:meal_request, user:, status: "queued")
+    get meal_requests_path
+    expect(response.body).to include("Clear all")
   end
 
   it "keeps a card that is still finding meals, so its job has somewhere to write" do
