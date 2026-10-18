@@ -24,6 +24,14 @@ RSpec.describe User do
     expect(build(:user, password: "a" * 73)).not_to be_valid
   end
 
+  it "rejects a password longer than bcrypt's 72 bytes, counting multibyte characters" do
+    eighteen_emoji = "\u{1F600}" * 18 # 18 characters, 72 bytes
+    expect(build(:user, password: eighteen_emoji)).to be_valid
+    user = build(:user, password: "#{eighteen_emoji}x")
+    expect(user).not_to be_valid
+    expect(user.errors[:password]).to include("is too long (maximum is 72 bytes; some characters take up to 4)")
+  end
+
   it "only accepts a known active provider" do
     expect(build(:user, active_provider: "acme")).not_to be_valid
     expect(build(:user, active_provider: "gemini")).to be_valid

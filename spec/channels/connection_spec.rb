@@ -19,6 +19,8 @@ end
 
 RSpec.describe "Ending a sign-in cuts open sockets" do
   let(:user) { create(:user) }
+  # reconnect: false: a tab told to reconnect could get back in with the
+  # session cookie before the sign-out response clears it.
   let(:remote) { instance_double(ActionCable::RemoteConnections::RemoteConnection, disconnect: nil) }
   let(:connections) { instance_double(ActionCable::RemoteConnections, where: remote) }
 
@@ -28,13 +30,13 @@ RSpec.describe "Ending a sign-in cuts open sockets" do
     sign_in(user)
     sign_out
     expect(connections).to have_received(:where).with(current_user: user)
-    expect(remote).to have_received(:disconnect)
+    expect(remote).to have_received(:disconnect).with(reconnect: false)
   end
 
   it "disconnects the user's sockets when the password changes" do
     user.update!(password: "a-brand-new-password")
     expect(connections).to have_received(:where).with(current_user: user)
-    expect(remote).to have_received(:disconnect)
+    expect(remote).to have_received(:disconnect).with(reconnect: false)
   end
 
   it "leaves sockets alone for other updates" do

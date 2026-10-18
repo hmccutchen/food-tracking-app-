@@ -13,6 +13,9 @@ class User < ApplicationRecord
     inverse_of: :created_by, dependent: :nullify
 
   validates :active_provider, inclusion: { in: Ai::Providers.keys }, allow_nil: true
+  # bcrypt ignores everything past 72 bytes, and Devise's password_length
+  # counts characters: 18 emoji fill those bytes on their own.
+  validate :password_fits_bcrypt, if: -> { password.present? }
 
   # A new password signs out the nurse's other devices (Devise checks the password
   # salt on every request); cut those devices' meal-update sockets too.
@@ -26,6 +29,10 @@ class User < ApplicationRecord
   private
 
   def disconnect_cable_connections
-    ActionCable.server.remote_connections.where(current_user: self).disconnect
+    ActionCable.server.remote_connections.where(current_user: self).disconnect(reconnect: false)
+  end
+
+  def password_fits_bcrypt
+    errors.add(:password, "is too long (maximum is 72 bytes; some characters take up to 4)") if password.bytesize > 72
   end
 end
