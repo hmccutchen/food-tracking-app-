@@ -1,12 +1,13 @@
 <% content_for :title, "Preparation notes" %>
 <h1>Preparation notes</h1>
-<p>
+<p class="lead">
   These notes appear under a result when a dish, prep note or ingredient mentions one of the
   keywords and a selected patient has a restriction covering one of the risk ingredients.
   They are advisory: they never change a result.
 </p>
 <p><%= link_to "Descriptor words", ingredient_descriptors_path %>: modifiers like "diced" or "fresh" that the check may skip in an ingredient phrase.</p>
 
+<div class="table-scroll">
 <table class="prep-methods-table">
   <thead>
     <tr><th>Method</th><th>Keywords</th><th>Risks</th><th>Shown</th><th></th></tr>
@@ -27,6 +28,7 @@
     <% end %>
   </tbody>
 </table>
+</div>
 <% if @prep_methods.empty? %>
   <p>No preparation notes yet. Run <code>bin/rails db:seed</code> to load the defaults.</p>
 <% end %>

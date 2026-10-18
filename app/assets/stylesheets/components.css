@@ -1,0 +1,303 @@
+/* Reusable components: buttons, fields, cards, lists, notices, tier badges. */
+@layer components {
+  /* ---------- Buttons ----------
+     Plain <button>, submit inputs and button_to forms are primary by default.
+     Variants: .btn-secondary, .btn-danger, .btn-small. Links can be .btn too. */
+  :where(button, input[type="submit"], input[type="button"], .btn) {
+    align-items: center;
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-sm);
+    color: var(--accent-text);
+    cursor: pointer;
+    display: inline-flex;
+    font: inherit;
+    font-size: var(--text-md);
+    font-weight: 600;
+    gap: var(--space-2);
+    justify-content: center;
+    line-height: 1.2;
+    min-block-size: var(--tap);
+    padding: 0.6rem 1.1rem;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  :where(button, input[type="submit"], input[type="button"], .btn):hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    color: var(--accent-text);
+  }
+  :where(button, input[type="submit"], input[type="button"], .btn):active { transform: translateY(1px); }
+  :where(button, input[type="submit"], input[type="button"], .btn):disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  .btn-secondary, .dismiss, .recheck {
+    background: var(--surface);
+    border-color: var(--border-control);
+    color: var(--text);
+  }
+  .btn-secondary:hover, .dismiss:hover, .recheck:hover {
+    background: var(--surface-2);
+    border-color: var(--text-muted);
+    color: var(--text);
+  }
+  .btn-danger {
+    background: var(--surface);
+    border-color: var(--danger-ink);
+    color: var(--danger-ink);
+  }
+  .btn-danger:hover {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: var(--accent-text);
+  }
+  @media (prefers-color-scheme: dark) {
+    .btn-danger:hover { color: #1a0605; }
+  }
+  .btn-small, .dismiss {
+    font-size: var(--text-sm);
+    padding: 0.4rem 0.8rem;
+  }
+  .btn-block { inline-size: 100%; }
+
+  /* button_to wraps its button in a form; keep it inline in action rows. */
+  form.button_to { display: inline-flex; margin: 0; }
+
+  .actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-3);
+    margin: var(--space-4) 0;
+  }
+  .actions > p { margin: 0; }
+
+  /* ---------- Form fields ---------- */
+  .form { display: grid; gap: var(--space-4); max-inline-size: 40rem; }
+  .form > p, .form > .actions { margin: 0; }
+  .field { display: grid; gap: var(--space-1); margin: 0 0 var(--space-4); min-inline-size: 0; }
+  .form > .field { margin: 0; }
+  .field label { font-size: var(--text-sm); }
+  .help, .field small {
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    font-weight: 400;
+  }
+
+  /* A checkbox or radio with its label; the whole row is the tap target. */
+  .check-row {
+    align-items: center;
+    display: flex;
+    gap: var(--space-3);
+    margin: 0 0 var(--space-3);
+    min-block-size: var(--tap);
+    position: relative;
+  }
+  .check-row label { cursor: pointer; flex: 1; font-weight: 500; padding-block: var(--space-2); }
+  .check-row small { color: var(--text-muted); }
+
+  .errors {
+    background: var(--danger-soft);
+    border: 1px solid var(--danger-ink);
+    border-radius: var(--radius);
+    color: var(--danger-ink);
+    margin: 0 0 var(--space-4);
+    padding: var(--space-3) var(--space-4);
+  }
+  .errors p { font-weight: 700; margin: 0 0 var(--space-1); }
+  .errors ul { margin: 0; }
+
+  /* Search: input and button on one row when there is room. */
+  .search-form { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-5); }
+  .search-form label { flex-basis: 100%; }
+  .search-form input[type="search"] { flex: 1 1 10rem; inline-size: auto; min-inline-size: 0; }
+
+  /* ---------- Cards and sections ---------- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    margin: 0 0 var(--space-4);
+    padding: var(--space-4);
+  }
+  .card > :last-child { margin-block-end: 0; }
+  .card > h2:first-child, .card > header:first-child h2 { margin-block-start: 0; }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    margin: 0 0 var(--space-5);
+    padding: clamp(var(--space-4), 3vw, var(--space-5));
+  }
+  .panel > h2:first-child { margin-block-start: 0; }
+  .panel > :last-child { margin-block-end: 0; }
+
+  .page-header {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    justify-content: space-between;
+    margin: 0 0 var(--space-5);
+  }
+  .page-header h1 { margin: 0; }
+  .page-header > p { margin: 0; }
+  .lead { color: var(--text-muted); max-inline-size: 65ch; }
+  .back-link { font-size: var(--text-sm); margin-block-start: var(--space-5); }
+
+  /* ---------- Lists of things (patients, custom items, foods) ---------- */
+  .item-list {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    list-style: none;
+    margin: 0 0 var(--space-5);
+    padding: 0;
+  }
+  .item-list > li { margin: 0; padding: var(--space-3) var(--space-4); }
+  .item-list > li + li { border-block-start: 1px solid var(--border); }
+  .item-list .item-meta { color: var(--text-muted); font-size: var(--text-sm); }
+  /* Whole row is the link. */
+  .item-list.links > li { padding: 0; }
+  .item-list.links > li > a {
+    align-items: center;
+    color: var(--text);
+    display: flex;
+    font-weight: 600;
+    justify-content: space-between;
+    min-block-size: 52px;
+    padding: var(--space-3) var(--space-4);
+    text-decoration: none;
+  }
+  .item-list.links > li > a::after {
+    border-block-start: 2px solid var(--text-muted);
+    border-inline-end: 2px solid var(--text-muted);
+    block-size: 8px;
+    content: "";
+    flex: none;
+    inline-size: 8px;
+    margin-inline-start: var(--space-3);
+    rotate: 45deg;
+  }
+  .item-list.links > li > a:hover { background: var(--surface-2); }
+  .item-list.links > li:first-child > a { border-start-start-radius: var(--radius); border-start-end-radius: var(--radius); }
+  .item-list.links > li:last-child > a { border-end-start-radius: var(--radius); border-end-end-radius: var(--radius); }
+
+  /* ---------- Notices ---------- */
+  .flash, .notice {
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    border-inline-start-width: 4px;
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    margin: 0 0 var(--space-4);
+    padding: var(--space-3) var(--space-4);
+  }
+  .alert, .flash-alert {
+    background: var(--danger-soft);
+    border: 1px solid var(--danger-ink);
+    border-inline-start-width: 4px;
+    border-radius: var(--radius-sm);
+    color: var(--danger-ink);
+    margin: 0 0 var(--space-4);
+    padding: var(--space-3) var(--space-4);
+  }
+  .privacy-note {
+    background: var(--surface-2);
+    border-inline-start: 4px solid var(--accent);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: var(--text-sm);
+    margin: 0 0 var(--space-4);
+    padding: var(--space-3) var(--space-4);
+  }
+  .warning-banner, .stale {
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
+    border-inline-start-width: 4px;
+    border-radius: var(--radius-sm);
+    color: var(--warn-fg);
+    font-weight: 700;
+    margin: 0 0 var(--space-3);
+    padding: var(--space-2) var(--space-3);
+  }
+  .empty-state {
+    background: var(--surface);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    padding: var(--space-5) var(--space-4);
+    text-align: center;
+  }
+
+  /* ---------- Tier badges: color + words, never color alone ---------- */
+  .tier-badge {
+    align-items: center;
+    background: var(--tier-unknown-bg);
+    border: 1px solid var(--tier-unknown-border);
+    border-radius: var(--radius-pill);
+    color: var(--tier-unknown-fg);
+    display: inline-flex;
+    font-size: var(--text-sm);
+    font-weight: 700;
+    gap: 0.35em;
+    line-height: 1.2;
+    max-inline-size: 100%;
+    padding: 0.2rem 0.65rem;
+    vertical-align: middle;
+  }
+  .tier-badge::before {
+    font-size: 0.85em;
+    line-height: 1;
+  }
+  .tier-badge[data-tier="conflict"] {
+    background: var(--tier-conflict-bg);
+    border-color: var(--tier-conflict-border);
+    color: var(--tier-conflict-fg);
+  }
+  .tier-badge[data-tier="conflict"]::before { content: "\2715" / ""; } /* ✕, silent for screen readers */
+  .tier-badge[data-tier="possible_conflict"] {
+    background: var(--tier-possible-bg);
+    border-color: var(--tier-possible-border);
+    color: var(--tier-possible-fg);
+  }
+  .tier-badge[data-tier="possible_conflict"]::before { content: "!" / ""; font-weight: 900; }
+  .tier-badge[data-tier="unknown"]::before { content: "?" / ""; font-weight: 900; }
+  .tier-badge[data-tier="none"] {
+    background: var(--tier-none-bg);
+    border-color: var(--tier-none-border);
+    color: var(--tier-none-fg);
+  }
+  .tier-badge[data-tier="none"]::before { content: "\2713" / ""; } /* ✓ */
+
+  /* ---------- Tables that may be wider than a phone ---------- */
+  .table-scroll {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin: 0 0 var(--space-5);
+    max-inline-size: 100%;
+    overflow-x: auto;
+  }
+  .table-scroll table { margin: 0; }
+  .table-scroll tr:last-child > * { border-block-end: 0; }
+
+  /* Key/value details (custom item page). */
+  .details-list {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-4);
+  }
+  @media (min-width: 768px) {
+    .details-list { grid-template-columns: minmax(10rem, max-content) 1fr; }
+    .details-list dd { margin: 0; }
+  }
+}

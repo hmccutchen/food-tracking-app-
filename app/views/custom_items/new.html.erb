@@ -1,5 +1,7 @@
 <% content_for :title, "Add a custom item" %>
 <h1>Add a custom item</h1>
-<p>For a food or ingredient that isn't in the USDA list or the built-in ingredient list.
+<p class="lead">For a food or ingredient that isn't in the USDA list or the built-in ingredient list.
   Once added, it is recognized wherever ingredients are checked.</p>
-<%= render "form", item: @item %>
+<div class="panel">
+  <%= render "form", item: @item %>
+</div>

@@ -1,10 +1,14 @@
 <% content_for :title, "Who's eating?" %>
 <h1>Who's eating?</h1>
 
+<%# Wide screens: two columns. Left: picker and avoid list. Right: check
+    ingredients, suggest meals and recent suggestions. The avoid_list frame is
+    display: contents so its two column wrappers sit in the same grid. %>
+<div class="group-layout">
 <% if @patients.empty? %>
-  <p>No patients yet. <%= link_to "Add a patient", new_patient_path %> first.</p>
+  <p class="empty-state group-empty">No patients yet. <%= link_to "Add a patient", new_patient_path %> first.</p>
 <% else %>
-  <%= form_with url: group_path, method: :get, id: "group_selection",
+  <%= form_with url: group_path, method: :get, id: "group_selection", class: "group-picker panel",
         data: { turbo_frame: "avoid_list", turbo_action: "advance", controller: "auto-submit" } do |form| %>
     <fieldset>
       <legend>Pick the patients eating together</legend>
@@ -20,28 +24,31 @@
         <% end %>
       </ul>
     </fieldset>
-    <%= form.submit "Update", name: nil, data: { auto_submit_target: "button" } %>
+    <%= form.submit "Update", name: nil, class: "btn-secondary", data: { auto_submit_target: "button" } %>
   <% end %>
 <% end %>
 
 <%= turbo_frame_tag "avoid_list" do %>
-  <p id="list_built_at" class="list-built-at">
-    List built at <%= time_tag @avoid_list.built_at, @avoid_list.built_at.to_fs(:short) %>
-  </p>
-  <%= render "groups/avoid_list", avoid_list: @avoid_list %>
+  <div class="group-col group-col-left">
+    <p id="list_built_at" class="list-built-at">
+      List built at <%= time_tag @avoid_list.built_at, @avoid_list.built_at.to_fs(:short) %>
+    </p>
+    <%= render "groups/avoid_list", avoid_list: @avoid_list %>
+  </div>
 
+  <div class="group-col group-col-right">
   <% if @selected.any? %>
-    <section id="check_ingredients" aria-labelledby="check_ingredients_heading">
+    <section id="check_ingredients" class="panel" aria-labelledby="check_ingredients_heading">
       <h2 id="check_ingredients_heading">Check ingredients</h2>
       <%= form_with url: check_group_path, id: "check_ingredients_form" do |form| %>
         <% @selected.each do |patient| %>
           <%= hidden_field_tag "patient_ids[]", patient.id, id: nil %>
         <% end %>
-        <p>
-          <%= label_tag :ingredients, "Ingredients (one per line, or separated by commas)" %><br>
+        <div class="field">
+          <%= label_tag :ingredients, "Ingredients (one per line, or separated by commas)" %>
           <%= text_area_tag :ingredients, @ingredients_text, rows: 4, data: { turbo_permanent: true } %>
-        </p>
-        <p><%= form.submit "Check", name: nil %></p>
+        </div>
+        <div class="actions"><%= form.submit "Check", name: nil %></div>
       <% end %>
       <div id="evaluation_result" aria-live="polite">
         <% if @result %>
@@ -51,19 +58,19 @@
       </div>
     </section>
 
-    <section id="suggest_meals" aria-labelledby="suggest_meals_heading">
+    <section id="suggest_meals" class="panel" aria-labelledby="suggest_meals_heading">
       <h2 id="suggest_meals_heading">Suggest meals</h2>
-      <p>Meal ideas come from your AI provider. Every one is checked against these patients' restrictions here,
+      <p class="help">Meal ideas come from your AI provider. Every one is checked against these patients' restrictions here,
         and meals with a conflict are set aside. Only restriction terms are sent, never names.</p>
       <%= form_with url: meal_requests_path, id: "suggest_meals_form" do |form| %>
         <% @selected.each do |patient| %>
           <%= hidden_field_tag "patient_ids[]", patient.id, id: nil %>
         <% end %>
-        <p>
-          <%= label_tag :request_text, "What kind of meal? (optional, e.g. \"dinner, soft foods\")" %><br>
+        <div class="field">
+          <%= label_tag :request_text, "What kind of meal? (optional, e.g. \"dinner, soft foods\")" %>
           <%= text_area_tag :request_text, nil, rows: 2, maxlength: 500 %>
-        </p>
-        <p><%= form.submit "Suggest meals", name: nil %></p>
+        </div>
+        <div class="actions"><%= form.submit "Suggest meals", name: nil %></div>
       <% end %>
     </section>
   <% end %>
@@ -72,7 +79,9 @@
     <%# Loaded separately so this page's HTML (which the service worker may
         save for offline use) never holds meal results. %>
     <%= turbo_frame_tag "recent_meal_requests_frame", src: meal_requests_path do %>
-      <p>Loading recent meal suggestions…</p>
+      <p class="loading">Loading recent meal suggestions…</p>
     <% end %>
   <% end %>
+  </div>
 <% end %>
+</div>

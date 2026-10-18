@@ -1,20 +1,27 @@
 <% content_for :title, "Custom items" %>
-<h1>Custom items</h1>
-<p><%= link_to "Add a custom item", new_custom_item_path %></p>
+<header class="page-header">
+  <h1>Custom items</h1>
+  <p><%= link_to "Add a custom item", new_custom_item_path, class: "btn" %></p>
+</header>
 
 <% if @items.empty? %>
-  <p>No custom items yet. Add one when a food or ingredient isn't recognized.</p>
+  <p class="empty-state">No custom items yet. Add one when a food or ingredient isn't recognized.</p>
 <% else %>
-  <ul id="custom_items">
+  <ul id="custom_items" class="item-list">
     <% @items.each do |node| %>
-      <li id="<%= dom_id(node, :custom) %>">
-        <strong><%= link_to node.name, custom_item_path(node) %></strong>
-        <% if node.parent %> · a kind of <%= node.parent.name %><% end %>
-        <% if node.aliases.any? %> · also called <%= node.aliases.map(&:term).sort.to_sentence %><% end %>
-        <br>
-        <%= link_to "Edit", edit_custom_item_path(node) %>
-        <%= button_to "Delete", custom_item_path(node), method: :delete, form: { style: "display:inline" },
-              data: { turbo_confirm: "Delete #{node.name}? Restrictions that use it will match by text only." } %>
+      <li id="<%= dom_id(node, :custom) %>" class="custom-item">
+        <div class="custom-item-body">
+          <strong><%= link_to node.name, custom_item_path(node) %></strong>
+          <span class="item-meta">
+            <% if node.parent %> · a kind of <%= node.parent.name %><% end %>
+            <% if node.aliases.any? %> · also called <%= node.aliases.map(&:term).sort.to_sentence %><% end %>
+          </span>
+        </div>
+        <div class="custom-item-actions">
+          <%= link_to "Edit", edit_custom_item_path(node), class: "btn btn-secondary btn-small" %>
+          <%= button_to "Delete", custom_item_path(node), method: :delete, class: "btn-danger btn-small",
+                data: { turbo_confirm: "Delete #{node.name}? Restrictions that use it will match by text only." } %>
+        </div>
       </li>
     <% end %>
   </ul>

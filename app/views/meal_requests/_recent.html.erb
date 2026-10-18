@@ -1,5 +1,5 @@
 <%# locals: (meal_requests:) %>
-<section id="recent_meal_requests" aria-labelledby="recent_meal_requests_heading">
+<section id="recent_meal_requests" class="recent-meals" aria-labelledby="recent_meal_requests_heading">
   <h2 id="recent_meal_requests_heading">Recent meal suggestions</h2>
   <div id="meal_requests">
     <% meal_requests.each do |meal_request| %>
@@ -7,6 +7,6 @@
     <% end %>
   </div>
   <% if meal_requests.empty? %>
-    <p id="meal_requests_empty">No meal suggestions yet.</p>
+    <p id="meal_requests_empty" class="empty-state">No meal suggestions yet.</p>
   <% end %>
 </section>

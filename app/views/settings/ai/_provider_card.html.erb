@@ -1,12 +1,12 @@
-<section class="provider-card" id="provider_<%= provider.key %>" aria-labelledby="provider_<%= provider.key %>_heading">
+<section class="provider-card card" id="provider_<%= provider.key %>" aria-labelledby="provider_<%= provider.key %>_heading">
   <h2 id="provider_<%= provider.key %>_heading">
-    <%= provider.name %><% if active %> <small>(in use)</small><% end %>
+    <%= provider.name %><% if active %> <small class="in-use">(in use)</small><% end %>
   </h2>
 
   <% if card_error %><p role="alert" class="alert"><%= card_error %></p><% end %>
 
   <% if credential.persisted? %>
-    <p>Saved key ending in <%= credential.key_last4 %>.</p>
+    <p class="key-status">Saved key ending in <%= credential.key_last4 %>.</p>
     <p class="status">
       <% if credential.last_error && (credential.validated_at.nil? || credential.last_checked_at > credential.validated_at) %>
         Last check <%= time_ago_in_words(credential.last_checked_at) %> ago: <%= credential.last_error.plain_message %>
@@ -15,42 +15,43 @@
       <% end %>
     </p>
   <% else %>
-    <p>No key saved.</p>
+    <p class="key-status muted">No key saved.</p>
   <% end %>
 
   <%= form_with model: credential, url: settings_ai_credential_path(provider.key), method: :patch,
-        id: "provider_#{provider.key}_form" do |form| %>
-    <p>
-      <%= form.label :api_key, "#{provider.name} API key", for: "#{provider.key}_api_key" %><br>
+        id: "provider_#{provider.key}_form", class: "form" do |form| %>
+    <div class="field">
+      <%= form.label :api_key, "#{provider.name} API key", for: "#{provider.key}_api_key" %>
       <%# Always blank: the saved key is never sent back to the browser. %>
       <%= form.password_field :api_key, value: nil, id: "#{provider.key}_api_key", autocomplete: "off",
             placeholder: credential.persisted? ? "Leave blank to keep the saved key" : "Paste your key",
-            size: 40 %><br>
+            size: 40 %>
       <small><%= provider.key_hint %></small>
-    </p>
+    </div>
 
     <% if credential.persisted? %>
       <% listed = credential.available_models.include?(credential.model) %>
-      <p>
-        <%= form.label :model, "Model", for: "#{provider.key}_model" %><br>
+      <div class="field">
+        <%= form.label :model, "Model", for: "#{provider.key}_model" %>
         <% if credential.available_models.any? %>
           <%= form.select :model, credential.available_models, { include_blank: "Choose a model",
                 selected: (credential.model if listed) }, id: "#{provider.key}_model" %>
         <% else %>
           <small>No model list yet. Use “Test key” to fetch it, or type a model id below.</small>
         <% end %>
-      </p>
-      <p>
-        <%= form.label :other_model, "Other model id (if it isn't listed)", for: "#{provider.key}_other_model" %><br>
+      </div>
+      <div class="field">
+        <%= form.label :other_model, "Other model id (if it isn't listed)", for: "#{provider.key}_other_model" %>
         <%= form.text_field :other_model, value: (credential.model unless listed), id: "#{provider.key}_other_model",
               autocomplete: "off" %>
-      </p>
+      </div>
     <% end %>
 
-    <p><%= form.submit "Save #{provider.name} settings" %></p>
+    <div class="actions"><%= form.submit "Save #{provider.name} settings" %></div>
   <% end %>
 
   <% if credential.persisted? %>
-    <%= button_to "Test key", test_settings_ai_credential_path(provider.key), method: :post %>
+    <%= button_to "Test key", test_settings_ai_credential_path(provider.key), method: :post, class: "btn-secondary",
+          form: { class: "button_to test-key-form" } %>
   <% end %>
 </section>

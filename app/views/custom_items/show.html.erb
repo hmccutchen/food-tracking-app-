@@ -2,7 +2,7 @@
 <% node = @item.node %>
 <h1>Custom item: <%= node.name %></h1>
 
-<dl>
+<dl class="details-list">
   <dt>A kind of</dt>
   <dd><%= node.parent&.name || "—" %></dd>
   <dt>Other names</dt>
@@ -14,24 +14,25 @@
 </dl>
 <% unrecognized = @item.unrecognized_ingredients %>
 <% if unrecognized.any? %>
-  <p class="unrecognized">Not recognized in the ingredients: <%= unrecognized.to_sentence %>.
+  <p class="unrecognized warning-banner">Not recognized in the ingredients: <%= unrecognized.to_sentence %>.
     These are not linked to any restriction.</p>
 <% end %>
 
-<p>
-  <%= link_to "Edit", edit_custom_item_path(@item) %>
-  · <%= link_to "All custom items", custom_items_path %>
-  · <%= link_to "Who's eating", group_path %>
+<p class="actions">
+  <%= link_to "Edit", edit_custom_item_path(@item), class: "btn btn-secondary btn-small" %>
+  <%= link_to "All custom items", custom_items_path %>
+  <%= link_to "Who's eating", group_path %>
 </p>
 
-<section aria-labelledby="marks_heading">
+<section class="panel" aria-labelledby="marks_heading">
   <h2 id="marks_heading">Who can have it?</h2>
   <% if @patients.empty? %>
     <p>No patients yet.</p>
   <% else %>
     <p>A "cannot" always wins. A "can" never silences an allergy.</p>
     <%= form_with url: marks_custom_item_path(@item), method: :patch, id: "marks_form" do %>
-      <table>
+      <div class="table-scroll">
+      <table class="marks-table">
         <thead><tr><th>Patient</th><th>Not set</th><th>Can have</th><th>Cannot have</th></tr></thead>
         <tbody>
           <% @patients.each do |patient| %>
@@ -49,10 +50,11 @@
           <% end %>
         </tbody>
       </table>
-      <p><%= submit_tag "Save", name: nil %></p>
+      </div>
+      <div class="actions"><%= submit_tag "Save", name: nil %></div>
     <% end %>
   <% end %>
 </section>
 
-<%= button_to "Delete custom item", custom_item_path(@item), method: :delete,
+<%= button_to "Delete custom item", custom_item_path(@item), method: :delete, class: "btn-danger",
       data: { turbo_confirm: "Delete #{node.name}? Restrictions that use it will match by text only." } %>

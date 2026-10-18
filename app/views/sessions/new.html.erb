@@ -1,13 +1,17 @@
 <%# Backstop: deletes any saved avoid lists left on this device. %>
 <div id="pwa_purge" hidden data-controller="purge"></div>
-<%= tag.div(flash[:alert], style: "color:red") if flash[:alert] %>
-<%= tag.div(flash[:notice], style: "color:green") if flash[:notice] %>
+<div class="auth-card">
+  <div class="auth-brand">
+    <h1 class="app-name">Meal Planner</h1>
+  </div>
+  <%= tag.div(flash[:alert], class: "flash-alert", role: "alert") if flash[:alert] %>
+  <%= tag.div(flash[:notice], class: "flash", role: "status") if flash[:notice] %>
 
-<%= form_with url: session_path do |form| %>
-  <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username", placeholder: "Enter your email address", value: params[:email_address] %><br>
-  <%= form.password_field :password, required: true, autocomplete: "current-password", placeholder: "Enter your password", maxlength: 72 %><br>
-  <%= form.submit "Sign in" %>
-<% end %>
-<br>
+  <%= form_with url: session_path do |form| %>
+    <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username", placeholder: "Enter your email address", value: params[:email_address], aria: { label: "Email address" } %>
+    <%= form.password_field :password, required: true, autocomplete: "current-password", placeholder: "Enter your password", maxlength: 72, aria: { label: "Password" } %>
+    <%= form.submit "Sign in" %>
+  <% end %>
 
-<%= link_to "Forgot password?", new_password_path %>
+  <p class="auth-links"><%= link_to "Forgot password?", new_password_path %></p>
+</div>

@@ -1,7 +1,57 @@
-/* Advisory preparation notes, the cross-contact reminder, and their edit page. */
-.cross-contact { border-left: 4px solid #555; font-weight: bold; padding-left: 0.5rem; }
-.prep-note { background: #f6f6f2; border: 1px solid #ccc; border-radius: 0.3rem; margin: 0.5rem 0; padding: 0.25rem 0.75rem; }
-.prep-note-label { font-size: 0.9em; margin-bottom: 0.2rem; }
-.prep-note-terms, .lower-risk { color: #444; font-size: 0.95em; }
-.prep-note .dismiss { margin-bottom: 0.5rem; }
-.prep-methods-table td, .prep-methods-table th { border-bottom: 1px solid #ddd; padding: 0.3rem; text-align: left; vertical-align: top; }
+/* Advisory preparation notes, the cross-contact reminder, and their edit page.
+   Advisory means softer: neutral colors, never tier colors. */
+@layer features {
+  .cross-contact {
+    background: var(--surface-2);
+    border-inline-start: 4px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    margin: 0 0 var(--space-3);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .prep-note {
+    background: var(--advisory-bg);
+    border: 1px solid var(--advisory-border);
+    border-radius: var(--radius);
+    font-size: var(--text-sm);
+    margin: 0 0 var(--space-3);
+    padding: var(--space-3) var(--space-4);
+  }
+  .prep-note p { margin: 0 0 var(--space-2); }
+  .prep-note-label { color: var(--text-muted); }
+  .prep-note-label strong { color: var(--text); }
+  .prep-note-label::before {
+    vertical-align: -0.2em;
+    border: 1.5px solid currentColor;
+    border-radius: 50%;
+    block-size: 1.1rem;
+    content: "i" / "";
+    display: inline-grid;
+    font-size: 0.75rem;
+    font-style: italic;
+    font-weight: 700;
+    inline-size: 1.1rem;
+    margin-inline-end: var(--space-1);
+    place-items: center;
+  }
+  .prep-note-terms, .lower-risk { color: var(--text-muted); }
+  .prep-note .dismiss { margin: var(--space-1) 0 0; }
+
+  .prep-methods-table td:first-child { min-inline-size: 16rem; }
+  .prep-methods-table .lower-risk { display: block; font-size: var(--text-sm); margin-block-start: var(--space-1); }
+  .prep-methods-table td { font-size: var(--text-sm); }
+  .prep-methods-table td a, .descriptors-table td a {
+    align-items: center;
+    display: inline-flex;
+    font-weight: 600;
+    min-block-size: var(--tap);
+  }
+  .descriptors-table td { vertical-align: middle; }
+  .inline-add { display: flex; flex-wrap: wrap; gap: var(--space-2); max-inline-size: 32rem; }
+  .inline-add label { flex-basis: 100%; }
+  .inline-add input[type="text"] { flex: 1 1 10rem; inline-size: auto; min-inline-size: 0; }
+  .inline-add .errors { flex-basis: 100%; }
+  .field-narrow input { max-inline-size: 8rem; }
+}

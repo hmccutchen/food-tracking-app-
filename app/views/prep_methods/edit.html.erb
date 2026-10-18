@@ -1,41 +1,43 @@
 <% content_for :title, "Edit preparation note" %>
 <h1>Edit preparation note: <%= @prep_method.name_was.presence || @prep_method.name %></h1>
 
-<%= form_with model: @prep_method do |form| %>
+<div class="panel">
+<%= form_with model: @prep_method, class: "form" do |form| %>
   <%= render "shared/errors", record: @prep_method %>
 
-  <p>
-    <%= form.label :name, "Method name" %><br>
+  <div class="field">
+    <%= form.label :name, "Method name" %>
     <%= form.text_field :name, required: true %>
-  </p>
-  <p>
-    <%= form.label :keywords_text, "Keywords (separated by commas; whole words only)" %><br>
+  </div>
+  <div class="field">
+    <%= form.label :keywords_text, "Keywords (separated by commas; whole words only)" %>
     <%= form.text_area :keywords_text, rows: 2 %>
-  </p>
-  <p>
-    <%= form.label :risk, "Why it's a risk" %><br>
+  </div>
+  <div class="field">
+    <%= form.label :risk, "Why it's a risk" %>
     <%= form.text_area :risk, rows: 2, required: true %>
-  </p>
-  <p>
-    <%= form.label :lower_risk_method, "Lower-risk method" %><br>
+  </div>
+  <div class="field">
+    <%= form.label :lower_risk_method, "Lower-risk method" %>
     <%= form.text_field :lower_risk_method, required: true %>
-  </p>
-  <p>
-    <%= form.label :caveat, "Caveat (shown after the lower-risk method)" %><br>
+  </div>
+  <div class="field">
+    <%= form.label :caveat, "Caveat (shown after the lower-risk method)" %>
     <%= form.text_field :caveat, required: true %>
-  </p>
-  <p>
-    <%= form.label :risk_node_ids, "Risk ingredients (hold Ctrl or Cmd to pick several)" %><br>
+  </div>
+  <div class="field">
+    <%= form.label :risk_node_ids, "Risk ingredients (hold Ctrl or Cmd to pick several)" %>
     <%= form.collection_select :risk_node_ids, TaxonomyNode.order(:name), :id, :name, {},
           multiple: true, size: 12 %>
-  </p>
-  <p>
+  </div>
+  <div class="field field-narrow">
     <%= form.label :position, "Order" %>
     <%= form.number_field :position, min: 0 %>
-  </p>
-  <p>
+  </div>
+  <div class="check-row">
     <%= form.check_box :active %>
     <%= form.label :active, "Show this note" %>
-  </p>
-  <p><%= form.submit "Save" %> <%= link_to "Cancel", prep_methods_path %></p>
+  </div>
+  <div class="actions"><%= form.submit "Save" %> <%= link_to "Cancel", prep_methods_path, class: "btn btn-secondary" %></div>
 <% end %>
+</div>

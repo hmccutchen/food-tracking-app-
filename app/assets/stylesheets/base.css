@@ -1,0 +1,125 @@
+/* Element defaults: typography, links, focus, form controls, tables. */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: var(--text-md);
+    line-height: var(--leading);
+    margin: 0;
+    min-block-size: 100dvh;
+    overflow-wrap: break-word;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :where(h1, h2, h3, h4) {
+    line-height: var(--leading-tight);
+    margin: 0 0 var(--space-3);
+    text-wrap: balance;
+  }
+  h1 { font-size: var(--text-2xl); letter-spacing: -0.01em; }
+  h2 { font-size: var(--text-xl); margin-block-start: var(--space-5); }
+  h3 { font-size: var(--text-lg); }
+  h4 { font-size: var(--text-md); }
+
+  :where(p, ul, ol, dl, table, fieldset) { margin: 0 0 var(--space-4); }
+  :where(ul, ol) { padding-inline-start: 1.25rem; }
+  li + li { margin-block-start: var(--space-1); }
+  small { font-size: var(--text-sm); }
+  code {
+    background: var(--surface-2);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    padding: 0.1em 0.35em;
+  }
+
+  a {
+    color: var(--accent-ink);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+  }
+  a:hover { text-decoration-thickness: 2px; }
+
+  :focus { outline: none; }
+  :focus-visible {
+    border-radius: 4px;
+    box-shadow: var(--focus-ring);
+    outline: 2px solid transparent; /* shows in forced-colors mode */
+  }
+
+  hr { border: 0; border-block-start: 1px solid var(--border); margin: var(--space-5) 0; }
+
+  /* Forms */
+  label { font-weight: 600; }
+
+  :where(input:not([type="checkbox"], [type="radio"], [type="submit"], [type="button"], [type="hidden"]), select, textarea) {
+    background: var(--surface);
+    border: 1px solid var(--border-control);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font: inherit;
+    font-size: max(16px, 1rem); /* 16px+ keeps iOS from zooming */
+    inline-size: 100%;
+    max-inline-size: 100%;
+    min-block-size: var(--tap);
+    padding: 0.55rem 0.75rem;
+  }
+  :where(input, select, textarea):focus-visible {
+    border-color: var(--accent-ink);
+    border-radius: var(--radius-sm);
+  }
+  textarea { line-height: var(--leading); min-block-size: 5.5rem; resize: vertical; }
+  select[multiple] { padding: var(--space-1); }
+  ::placeholder { color: var(--text-muted); opacity: 1; }
+
+  input[type="checkbox"], input[type="radio"] {
+    accent-color: var(--accent);
+    block-size: 1.25rem;
+    flex: none;
+    inline-size: 1.25rem;
+    margin: 0;
+  }
+
+  fieldset {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-inline: 0;
+    min-inline-size: 0;
+    padding: var(--space-3) var(--space-4) var(--space-4);
+  }
+  legend { font-weight: 700; padding: 0 var(--space-2); }
+
+  /* Tables: scroll inside their own box, never the page. */
+  table { border-collapse: collapse; inline-size: 100%; }
+  :where(th, td) {
+    border-block-end: 1px solid var(--border);
+    padding: var(--space-2) var(--space-3);
+    text-align: start;
+    vertical-align: top;
+  }
+  th { font-size: var(--text-sm); }
+  thead th { color: var(--text-muted); font-weight: 600; }
+
+  dl { display: grid; gap: var(--space-1) var(--space-4); }
+  dt { color: var(--text-muted); font-size: var(--text-sm); font-weight: 600; }
+  dd { margin: 0 0 var(--space-2); }
+
+  details > summary { cursor: pointer; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

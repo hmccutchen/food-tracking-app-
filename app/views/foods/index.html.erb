@@ -1,7 +1,7 @@
 <% content_for :title, "Foods" %>
 <h1>Foods</h1>
 
-<%= form_with url: foods_path, method: :get, role: "search",
+<%= form_with url: foods_path, method: :get, role: "search", class: "search-form",
       data: { turbo_frame: "food_results", turbo_action: "advance" } do |form| %>
   <%= form.label :q, "Search USDA foods" %>
   <%= form.search_field :q, value: @query, placeholder: "e.g. almonds, cheddar", autocomplete: "off" %>
@@ -10,14 +10,14 @@
 
 <%= turbo_frame_tag "food_results" do %>
   <% if @food_count.zero? %>
-    <p>No USDA foods imported yet. Run <code>bin/rails usda:import</code>.</p>
+    <p class="empty-state">No USDA foods imported yet. Run <code>bin/rails usda:import</code>.</p>
   <% elsif @query.blank? %>
-    <p>Search <%= pluralize(@food_count, "USDA food") %>. Typos are OK.</p>
+    <p class="muted">Search <%= pluralize(@food_count, "USDA food") %>. Typos are OK.</p>
   <% elsif @foods.empty? %>
-    <p>No foods found for “<%= @query %>”.</p>
+    <p class="empty-state">No foods found for “<%= @query %>”.</p>
   <% else %>
-    <p><%= pluralize(@foods.size, "result") %> for “<%= @query %>”, closest first.</p>
-    <ul id="foods">
+    <p class="result-count"><%= pluralize(@foods.size, "result") %> for “<%= @query %>”, closest first.</p>
+    <ul id="foods" class="item-list">
       <% @foods.each do |food| %>
         <%= render food %>
       <% end %>

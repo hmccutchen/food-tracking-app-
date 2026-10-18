@@ -58,6 +58,14 @@ RSpec.describe "AI settings" do
       expect(user.provider_credentials).to be_empty
     end
 
+    it "keeps AI settings marked as the current section on the error page" do
+      stub_models_failure("gemini", status: 400, body: { error: { details: [ { reason: "API_KEY_INVALID" } ] } })
+      save_key("gemini", full_key)
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include(%(aria-current="true" href="#{settings_ai_path}">AI settings</a>))
+      expect(response.body).to match(/data-current\s*>More</)
+    end
+
     it "keeps the previous key when a replacement fails, but still saves the model" do
       credential = create(:provider_credential, user: user, provider: "anthropic", api_key: "old-key-0000")
       stub_models_failure("anthropic", status: 429, body: { error: { type: "rate_limit_error" } })
