@@ -1,0 +1,138 @@
+/* Design tokens. Every text/background pair below meets WCAG AA (4.5:1) in
+   both themes; see the contrast notes next to each tier. */
+@layer tokens {
+  :root {
+    color-scheme: light dark;
+
+    /* Neutrals */
+    --bg: #f3f6f6;
+    --surface: #ffffff;
+    --surface-2: #eef3f3;
+    --surface-sunken: #e6eded;
+    --border: #d2dcdc;
+    --border-strong: #9fb0b1;
+    --text: #172324;
+    --text-muted: #4a5a5c;       /* 7.2:1 on --surface, 6.6:1 on --bg */
+
+    /* One accent: calm clinical teal */
+    --accent: #1d6b5b;           /* white text on it: 6.4:1 */
+    --accent-hover: #155245;
+    --accent-text: #ffffff;
+    --accent-ink: #17604f;       /* accent as text/links: 7.4:1 on --surface */
+    --accent-soft: #e2f1ec;
+
+    /* Danger (destructive buttons) */
+    --danger: #a8231c;           /* white text: 7.2:1 */
+    --danger-hover: #861a14;
+    --danger-ink: #9b1f19;
+    --danger-soft: #fdeceb;
+
+    /* Tiers: background / text / border. Text never relies on the color. */
+    --tier-conflict-bg: #fde8ea;
+    --tier-conflict-fg: #8c1023; /* 8.1:1 on its bg */
+    --tier-conflict-border: #c9364a;
+    --tier-possible-bg: #fff0d6;
+    --tier-possible-fg: #723f00; /* 7.7:1 on its bg */
+    --tier-possible-border: #c98a1c;
+    --tier-unknown-bg: #e8edf3;
+    --tier-unknown-fg: #333e4b;  /* 9.2:1 on its bg */
+    --tier-unknown-border: #8593a5;
+    --tier-none-bg: #e3f3e8;
+    --tier-none-fg: #1a5730;     /* 7.5:1 on its bg */
+    --tier-none-border: #4f9a68;
+
+    /* Warning banner (out of date, offline) */
+    --warn-bg: #fff4dc;
+    --warn-fg: #5c3800;          /* 9.5:1 */
+    --warn-border: #c98a1c;
+
+    /* Advisory notes (prep notes): softer, neutral-warm */
+    --advisory-bg: #f6f5ef;
+    --advisory-border: #d9d5c4;
+
+    /* Type */
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --text-xs: 0.8125rem;
+    --text-sm: 0.9375rem;
+    --text-md: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: clamp(1.25rem, 1.1rem + 0.6vw, 1.45rem);
+    --text-2xl: clamp(1.5rem, 1.25rem + 1.2vw, 2rem);
+    --leading: 1.5;
+    --leading-tight: 1.25;
+
+    /* Spacing */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.5rem;
+    --space-6: 2rem;
+    --space-7: 3rem;
+    --gutter: clamp(1rem, 0.6rem + 2vw, 2rem);
+
+    /* Shape and depth */
+    --radius-sm: 6px;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --radius-pill: 999px;
+    --shadow-sm: 0 1px 2px rgb(16 32 34 / 0.06);
+    --shadow: 0 1px 3px rgb(16 32 34 / 0.08), 0 4px 12px rgb(16 32 34 / 0.05);
+    --shadow-lg: 0 8px 28px rgb(16 32 34 / 0.18);
+
+    /* Sizing */
+    --tap: 44px;
+    --content-max: 1100px;
+    --tabbar-h: 60px;
+    --focus-ring: 0 0 0 3px var(--bg), 0 0 0 5px var(--accent-ink);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e1516;
+      --surface: #162022;
+      --surface-2: #1c282a;
+      --surface-sunken: #111a1b;
+      --border: #2c3a3c;
+      --border-strong: #4a5d60;
+      --text: #e3ecec;           /* 13.8:1 on --surface */
+      --text-muted: #a5b4b5;     /* 7.8:1 on --surface */
+
+      --accent: #5cc2a7;         /* dark text on it: 7.7:1 */
+      --accent-hover: #7dd3bb;
+      --accent-text: #06231c;
+      --accent-ink: #72cfb5;     /* 9.0:1 on --surface */
+      --accent-soft: #173832;
+
+      --danger: #f08a80;         /* dark text on it: 6.8:1 (via --accent-text) */
+      --danger-hover: #f6a69e;
+      --danger-ink: #ff9b91;
+      --danger-soft: #3a1a18;
+
+      --tier-conflict-bg: #3b151b;
+      --tier-conflict-fg: #ffb4bd; /* 9.6:1 on its bg */
+      --tier-conflict-border: #d4596b;
+      --tier-possible-bg: #3a2709;
+      --tier-possible-fg: #ffcf8a; /* 9.9:1 on its bg */
+      --tier-possible-border: #c48a2a;
+      --tier-unknown-bg: #26303a;
+      --tier-unknown-fg: #d1dae4;  /* 9.5:1 on its bg */
+      --tier-unknown-border: #75849a;
+      --tier-none-bg: #143322;
+      --tier-none-fg: #a4e3b9;     /* 9.4:1 on its bg */
+      --tier-none-border: #4e9d6b;
+
+      --warn-bg: #3a2a0c;
+      --warn-fg: #ffd892;
+      --warn-border: #c48a2a;
+
+      --advisory-bg: #1d2422;
+      --advisory-border: #3b4744;
+
+      --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow: 0 1px 3px rgb(0 0 0 / 0.45), 0 4px 12px rgb(0 0 0 / 0.25);
+      --shadow-lg: 0 10px 30px rgb(0 0 0 / 0.55);
+    }
+  }
+}

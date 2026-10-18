@@ -3,31 +3,33 @@
 
 <% if alert.present? %><p role="alert" class="alert"><%= alert %></p><% end %>
 
-<p>Bring your own key: meal ideas use your own account with the provider you pick.</p>
+<p class="lead">Bring your own key: meal ideas use your own account with the provider you pick.</p>
 
-<%= form_with url: settings_ai_path, method: :patch, id: "provider_picker" do |form| %>
+<%= form_with url: settings_ai_path, method: :patch, id: "provider_picker", class: "panel provider-picker" do |form| %>
   <fieldset>
     <legend>Provider for meal ideas</legend>
     <p class="privacy-note">Only restriction terms (like 'tree nut' or 'low sodium') are sent to the provider you choose — never patient names.</p>
     <% Ai::Providers.all.each do |provider| %>
-      <p>
+      <div class="check-row">
         <%= radio_button_tag :active_provider, provider.key, Current.user.active_provider == provider.key,
               id: "active_provider_#{provider.key}" %>
         <%= label_tag "active_provider_#{provider.key}", provider.name %>
         <% unless @credentials[provider.key] %><small>(no key saved yet)</small><% end %>
-      </p>
+      </div>
     <% end %>
-    <p>
+    <div class="check-row">
       <%= radio_button_tag :active_provider, "", Current.user.active_provider.blank?, id: "active_provider_none" %>
       <%= label_tag "active_provider_none", "None" %>
-    </p>
+    </div>
   </fieldset>
-  <p><%= form.submit "Use this provider" %></p>
+  <div class="actions"><%= form.submit "Use this provider" %></div>
 <% end %>
 
+<div class="provider-cards">
 <% Ai::Providers.all.each do |provider| %>
   <%= render "settings/ai/provider_card", provider: provider,
         credential: @credentials[provider.key] || ProviderCredential.new(provider: provider.key),
         card_error: @card_errors&.dig(provider.key),
         active: Current.user.active_provider == provider.key %>
 <% end %>
+</div>

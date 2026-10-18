@@ -1,12 +1,13 @@
 <% content_for :title, "Patients" %>
-<h1>Patients</h1>
-
-<p><%= link_to "Add a patient", new_patient_path %></p>
+<header class="page-header">
+  <h1>Patients</h1>
+  <p><%= link_to "Add a patient", new_patient_path, class: "btn" %></p>
+</header>
 
 <% if @patients.empty? %>
-  <p>No patients yet.</p>
+  <p class="empty-state">No patients yet.</p>
 <% else %>
-  <ul id="patients">
+  <ul id="patients" class="item-list links">
     <% @patients.each do |patient| %>
       <li id="<%= dom_id(patient) %>"><%= link_to patient.display_name, patient %></li>
     <% end %>

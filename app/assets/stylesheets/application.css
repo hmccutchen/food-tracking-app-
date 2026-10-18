@@ -1,17 +1,33 @@
 /*
- * This is a manifest file that'll be compiled into application.css.
+ * Meal Planner styles. Plain CSS, no framework, no build step.
  *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
+ * Propshaft links every file in this folder (alphabetical order), so the cascade
+ * is ordered with layers instead of file order. This file sorts first and fixes
+ * the layer order once:
  *
- * Consider organizing styles into separate files for maintainability.
+ *   tokens.css      colors, spacing, type, radius, shadow (light + dark)
+ *   base.css        element defaults, focus rings, forms, tables
+ *   components.css  buttons, cards, badges, notices, lists, chips
+ *   layout.css      page shell: app bar, nav, main column, sign-in card
+ *                   (after components, so nav buttons override button defaults)
+ *   groups.css, meal_suggestions.css, prep_notes.css, settings.css
+ *                   page/feature specifics
+ *
+ * Tier colors are only a hint: every tier is written out in words.
  */
+@layer tokens, base, components, layout, features, utilities;
 
-body { font-family: system-ui, sans-serif; line-height: 1.45; margin: 0 auto; max-width: 48rem; padding: 0 1rem; }
+@layer utilities {
+  [hidden] { display: none !important; }
 
-.provider-card { border: 1px solid #ccc; border-radius: 6px; margin: 1rem 0; padding: 0 1rem 1rem; }
-.alert { color: #8a1c1c; }
-.privacy-note { background: #f4f4f4; padding: .5rem; }
-.offline-banner { background: #fff4d6; border: 1px solid #c9a227; padding: .5rem; }
+  .visually-hidden {
+    block-size: 1px;
+    clip-path: inset(50%);
+    inline-size: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+  }
+
+  .muted { color: var(--text-muted); }
+}

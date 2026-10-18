@@ -1,26 +1,26 @@
 <%# locals: (item:) %>
-<%= form_with model: item, id: "custom_item_form" do |form| %>
+<%= form_with model: item, id: "custom_item_form", class: "form" do |form| %>
   <%= render "shared/errors", record: item %>
 
-  <p>
-    <%= form.label :name, "Name" %><br>
+  <div class="field">
+    <%= form.label :name, "Name" %>
     <%= form.text_field :name, required: true, autocomplete: "off" %>
-  </p>
-  <p>
-    <%= form.label :ingredients_text, "Ingredients (optional, as on the label)" %><br>
+  </div>
+  <div class="field">
+    <%= form.label :ingredients_text, "Ingredients (optional, as on the label)" %>
     <%= form.text_area :ingredients_text, rows: 3, placeholder: "e.g. contains wheat flour, milk" %>
-  </p>
-  <p>
-    <%= form.label :parent_id, "This is a kind of… (optional)" %><br>
+  </div>
+  <div class="field">
+    <%= form.label :parent_id, "This is a kind of… (optional)" %>
     <%= form.collection_select :parent_id, CustomItem.parent_options(item.user, except: item.node), :id, :name,
           { include_blank: "Nothing in the list" } %>
-  </p>
-  <p>
-    <%= form.label :aliases_text, "Other names (optional, separated by commas)" %><br>
+  </div>
+  <div class="field">
+    <%= form.label :aliases_text, "Other names (optional, separated by commas)" %>
     <%= form.text_field :aliases_text, autocomplete: "off" %>
-  </p>
-  <p>
+  </div>
+  <div class="actions">
     <%= form.submit item.persisted? ? "Save custom item" : "Add custom item" %>
-    <%= link_to "Cancel", item.persisted? ? custom_item_path(item) : custom_items_path %>
-  </p>
+    <%= link_to "Cancel", item.persisted? ? custom_item_path(item) : custom_items_path, class: "btn btn-secondary" %>
+  </div>
 <% end %>

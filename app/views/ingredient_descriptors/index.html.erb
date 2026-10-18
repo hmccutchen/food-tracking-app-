@@ -1,17 +1,18 @@
 <% content_for :title, "Descriptor words" %>
 <h1>Descriptor words</h1>
-<p>
+<p class="lead">
   When an ingredient phrase isn't recognized as a whole, the check looks for known ingredients inside it.
   If every other word is a descriptor below (or a number), the phrase isn't marked unknown; for example,
   "2 cups diced chicken breast" is checked as chicken. The ingredients found are still checked against
   every restriction.
 </p>
-<p>
+<p class="lead">
   Only add words that never change what is in the food. Words like
   <%= IngredientDescriptor::NEVER.join(", ") %> can't be added.
 </p>
 <p><%= link_to "Back to preparation notes", prep_methods_path %></p>
 
+<div class="table-scroll">
 <table class="descriptors-table">
   <thead>
     <tr><th>Word</th><th>Used</th><th></th></tr>
@@ -26,16 +27,15 @@
     <% end %>
   </tbody>
 </table>
+</div>
 <% if @descriptors.empty? %>
   <p>No descriptor words yet. Run <code>bin/rails db:seed</code> to load the defaults.</p>
 <% end %>
 
 <h2>Add a word</h2>
-<%= form_with model: @descriptor do |form| %>
+<%= form_with model: @descriptor, class: "inline-add" do |form| %>
   <%= render "shared/errors", record: @descriptor %>
-  <p>
-    <%= form.label :word, "Word" %>
-    <%= form.text_field :word, required: true %>
-    <%= form.submit "Add" %>
-  </p>
+  <%= form.label :word, "Word" %>
+  <%= form.text_field :word, required: true %>
+  <%= form.submit "Add" %>
 <% end %>

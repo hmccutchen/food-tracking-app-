@@ -29,9 +29,9 @@
     </div>
   <% else %>
     <% if meal_request.stale? %>
-      <div class="meal-request-stale">
+      <div class="meal-request-stale warning-banner">
         <p>A patient's restrictions changed since these meals were checked.</p>
-        <%= button_to "Re-check", recheck_meal_request_path(meal_request), class: "recheck" %>
+        <%= button_to "Re-check", recheck_meal_request_path(meal_request), class: "recheck btn-small" %>
       </div>
     <% end %>
 

@@ -1,21 +1,30 @@
 <% content_for :title, @patient.display_name %>
-<h1><%= @patient.display_name %></h1>
-<p><%= render "patients/profile_version", patient: @patient %></p>
+<header class="patient-header">
+  <div class="patient-title">
+    <h1><%= @patient.display_name %></h1>
+    <p><%= render "patients/profile_version", patient: @patient %></p>
+  </div>
+  <div class="actions">
+    <%= link_to "Edit patient", edit_patient_path(@patient), class: "btn btn-secondary btn-small" %>
+    <%= button_to "Delete patient", @patient, method: :delete, class: "btn-danger btn-small",
+          form: { data: { turbo_confirm: "Delete #{@patient.display_name} and all their restrictions?" } } %>
+  </div>
+</header>
 
 <% if @patient.notes.present? %>
-  <p><%= simple_format(@patient.notes) %></p>
+  <div class="patient-notes"><%= simple_format(@patient.notes) %></div>
 <% end %>
 
-<p>
-  <%= link_to "Edit patient", edit_patient_path(@patient) %>
-  ·
-  <%= button_to "Delete patient", @patient, method: :delete, form: { data: { turbo_confirm: "Delete #{@patient.display_name} and all their restrictions?" }, style: "display:inline" } %>
-</p>
+<div class="patient-layout">
+  <section class="patient-restrictions" aria-labelledby="restrictions_heading">
+    <h2 id="restrictions_heading">Restrictions</h2>
+    <%= render "restrictions/list", patient: @patient %>
+  </section>
 
-<h2>Restrictions</h2>
-<%= render "restrictions/list", patient: @patient %>
+  <section class="panel patient-add-restriction" aria-labelledby="add_restriction_heading">
+    <h2 id="add_restriction_heading">Add a restriction</h2>
+    <%= render "restrictions/form", patient: @patient, restriction: @restriction %>
+  </section>
+</div>
 
-<h2>Add a restriction</h2>
-<%= render "restrictions/form", patient: @patient, restriction: @restriction %>
-
-<p><%= link_to "Back to patients", patients_path %></p>
+<p class="back-link"><%= link_to "Back to patients", patients_path %></p>

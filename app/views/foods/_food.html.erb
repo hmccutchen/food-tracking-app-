@@ -1,11 +1,11 @@
-<li id="<%= dom_id(food) %>">
-  <strong><%= food.description %></strong>
-  <br><%= food.source_label %><% if food.category.present? %> · <%= food.category %><% end %>
-  · imported <%= food.imported_at.strftime("%B %-d, %Y") %>
-  <br><%= food_link_summary(food) %>
+<li id="<%= dom_id(food) %>" class="food">
+  <strong class="food-name"><%= food.description %></strong>
+  <span class="item-meta food-source"><%= food.source_label %><% if food.category.present? %> · <%= food.category %><% end %>
+  · imported <%= food.imported_at.strftime("%B %-d, %Y") %></span>
+  <span class="food-link"><%= food_link_summary(food) %></span>
   <% if food.ingredients_text.present? %>
-    <br>Ingredients: <%= food.ingredients_text %>
+    <span class="food-ingredients">Ingredients: <%= food.ingredients_text %></span>
   <% else %>
-    <br><em>No ingredient list on this record.</em>
+    <em class="food-ingredients muted">No ingredient list on this record.</em>
   <% end %>
 </li>

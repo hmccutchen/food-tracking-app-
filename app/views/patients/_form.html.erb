@@ -1,15 +1,15 @@
-<%= form_with model: patient do |form| %>
+<%= form_with model: patient, class: "form" do |form| %>
   <%= render "shared/errors", record: patient %>
 
-  <p>
-    <%= form.label :display_name, "Name" %><br>
+  <div class="field">
+    <%= form.label :display_name, "Name" %>
     <%= form.text_field :display_name, required: true, autocomplete: "off" %>
-  </p>
+  </div>
 
-  <p>
-    <%= form.label :notes %><br>
+  <div class="field">
+    <%= form.label :notes %>
     <%= form.text_area :notes, rows: 4, cols: 40 %>
-  </p>
+  </div>
 
-  <p><%= form.submit %></p>
+  <div class="actions"><%= form.submit %></div>
 <% end %>

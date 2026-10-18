@@ -1,0 +1,337 @@
+/* Page shell: app bar, main navigation, content column, sign-in card.
+   Phones (< 768px): slim top bar + bottom tab bar (Who's eating, Patients,
+   Foods, More); "More" opens a bottom sheet.
+   Tablets (768–1099px): one top bar; "More" opens a dropdown.
+   Desktop (>= 1100px): every link in the top bar, no "More". */
+@layer layout {
+  .skip-link {
+    background: var(--accent);
+    border-radius: var(--radius-sm);
+    color: var(--accent-text);
+    font-weight: 600;
+    left: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    position: absolute;
+    top: -100px;
+    z-index: 100;
+  }
+  .skip-link:focus { top: calc(var(--space-2) + env(safe-area-inset-top)); }
+
+  /* ---------- Content column ---------- */
+  .page {
+    margin-inline: auto;
+    max-inline-size: calc(var(--content-max) + 2 * var(--gutter));
+    padding-block: var(--space-5) var(--space-7);
+    padding-inline: max(var(--gutter), env(safe-area-inset-left)) max(var(--gutter), env(safe-area-inset-right));
+  }
+  .page > :first-child { margin-block-start: 0; }
+
+  /* ---------- App bar ---------- */
+  .app-bar {
+    background: var(--surface);
+    border-block-end: 1px solid var(--border);
+    padding-block-start: env(safe-area-inset-top);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  .app-bar-inner {
+    align-items: center;
+    display: flex;
+    gap: var(--space-4);
+    margin-inline: auto;
+    max-inline-size: calc(var(--content-max) + 2 * var(--gutter));
+    min-block-size: 52px;
+    padding-inline: max(var(--gutter), env(safe-area-inset-left)) max(var(--gutter), env(safe-area-inset-right));
+  }
+  .brand {
+    align-items: center;
+    color: var(--text);
+    display: inline-flex;
+    flex: none;
+    font-size: var(--text-lg);
+    font-weight: 700;
+    gap: var(--space-2);
+    letter-spacing: -0.01em;
+    min-block-size: var(--tap);
+    text-decoration: none;
+  }
+  .brand::before {
+    background: var(--accent);
+    border-radius: 8px;
+    block-size: 28px;
+    content: "";
+    inline-size: 28px;
+    -webkit-mask: var(--icon-brand) center / 28px no-repeat;
+    mask: var(--icon-brand) center / 28px no-repeat;
+  }
+
+  .main-nav ul { list-style: none; margin: 0; padding: 0; }
+  .main-nav li { margin: 0; }
+
+  .nav-link {
+    align-items: center;
+    background: none;
+    border: 0;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    font: inherit;
+    font-weight: 600;
+    min-block-size: var(--tap);
+    text-decoration: none;
+  }
+  .nav-link:hover { color: var(--text); }
+  .nav-link[aria-current], .nav-more[data-current] { color: var(--accent-ink); }
+
+  /* Account: "Signed in as …" + Sign out. The email shows on wide screens
+     only; narrower screens keep it for screen readers. */
+  .account {
+    align-items: center;
+    display: flex;
+    flex: none;
+    gap: var(--space-3);
+    margin-inline-start: auto;
+  }
+  .account-user {
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+    line-height: 1.3;
+    max-inline-size: 13rem;
+    overflow-wrap: anywhere;
+    text-align: end;
+  }
+  @media (max-width: 1099.98px) {
+    .account-user {
+      block-size: 1px;
+      clip-path: inset(50%);
+      inline-size: 1px;
+      overflow: hidden;
+      position: absolute;
+      white-space: nowrap;
+    }
+  }
+  .sign-out-form { margin: 0; }
+
+  /* Popover reset (UA styles center it with a border). */
+  .nav-more-menu {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0;
+  }
+  .nav-more-menu::backdrop { background: rgb(0 0 0 / 0.3); }
+
+  /* ---------- Phones: bottom tab bar ---------- */
+  @media (max-width: 767.98px) {
+    body.signed-in { padding-block-end: calc(var(--tabbar-h) + env(safe-area-inset-bottom)); }
+    .app-bar-inner { min-block-size: 52px; }
+    .brand { font-size: var(--text-md); }
+    .brand::before { block-size: 24px; inline-size: 24px; mask-size: 24px; -webkit-mask-size: 24px; }
+    .account .btn-small { min-block-size: 40px; }
+
+    .nav-tabs {
+      background: var(--surface);
+      border-block-start: 1px solid var(--border);
+      bottom: 0;
+      box-shadow: 0 -2px 10px rgb(0 0 0 / 0.06);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      left: 0;
+      padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      position: fixed;
+      right: 0;
+      z-index: 30;
+    }
+    .nav-tabs .nav-link {
+      block-size: var(--tabbar-h);
+      border-radius: 0;
+      flex-direction: column;
+      font-size: 0.75rem;
+      gap: 3px;
+      inline-size: 100%;
+      justify-content: center;
+      line-height: 1.1;
+      padding: var(--space-1) 2px;
+      position: relative;
+      text-align: center;
+    }
+    .nav-tabs .nav-link::before {
+      background: currentColor;
+      block-size: 24px;
+      content: "";
+      flex: none;
+      inline-size: 24px;
+      -webkit-mask: var(--icon) center / 24px no-repeat;
+      mask: var(--icon) center / 24px no-repeat;
+    }
+    .nav-tabs .nav-link[aria-current]::after,
+    .nav-tabs .nav-more[data-current]::after {
+      background: var(--accent-ink);
+      block-size: 3px;
+      border-radius: 0 0 3px 3px;
+      content: "";
+      inline-size: 32px;
+      position: absolute;
+      top: 0;
+    }
+
+    /* Bottom sheet above the tab bar. Without popover support the menu
+       simply shows in the page under the app bar. */
+    .nav-more-menu { border-radius: var(--radius-lg); }
+    @supports selector(:popover-open) {
+      .nav-more-menu {
+        bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + var(--space-2));
+        box-shadow: var(--shadow-lg);
+        inline-size: auto;
+        inset-inline: max(var(--space-2), env(safe-area-inset-left)) max(var(--space-2), env(safe-area-inset-right));
+        margin: 0;
+        max-block-size: calc(100dvh - var(--tabbar-h) - 6rem);
+        overflow: auto;
+        position: fixed;
+        top: auto;
+      }
+    }
+    .nav-secondary .nav-link {
+      border-radius: 0;
+      color: var(--text);
+      min-block-size: 52px;
+      padding-inline: var(--space-4);
+    }
+    .nav-secondary li + li .nav-link { border-block-start: 1px solid var(--border); }
+    .nav-secondary .nav-link[aria-current] { background: var(--accent-soft); color: var(--accent-ink); }
+  }
+
+  /* ---------- Tablet: one top bar, "More" drops down ---------- */
+  @media (min-width: 768px) {
+    .app-bar-inner { min-block-size: 60px; }
+    .main-nav { align-items: center; display: flex; }
+    .nav-tabs { align-items: center; display: flex; gap: var(--space-1); }
+    .nav-link { padding-inline: var(--space-3); position: relative; white-space: nowrap; }
+    .nav-link:hover { background: var(--surface-2); }
+    .nav-link[aria-current] { background: var(--accent-soft); }
+    .nav-more::after {
+      border-block-start: 5px solid currentColor;
+      border-inline: 4px solid transparent;
+      content: "";
+      margin-inline-start: var(--space-2);
+    }
+    .nav-more-menu { padding: var(--space-2); }
+    @supports selector(:popover-open) {
+      .nav-more-menu {
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        inline-size: 260px;
+        inset: auto;
+        margin: 0;
+        position: fixed;
+        right: max(var(--gutter), calc((100vw - var(--content-max)) / 2));
+        top: calc(60px + env(safe-area-inset-top) + var(--space-1));
+      }
+      .nav-more-menu::backdrop { background: transparent; }
+    }
+    .nav-secondary .nav-link { color: var(--text); }
+  }
+
+  /* ---------- Desktop: two rows (brand + account, then every link) ---------- */
+  @media (min-width: 1100px) {
+    .app-bar-inner {
+      column-gap: var(--space-4);
+      display: grid;
+      grid-template-areas: "brand account" "nav nav";
+      grid-template-columns: auto 1fr;
+      min-block-size: 0;
+      padding-block-start: var(--space-2);
+    }
+    .brand { grid-area: brand; }
+    .account { grid-area: account; }
+    .main-nav { grid-area: nav; margin-inline: calc(-1 * var(--space-3)); }
+    .nav-more-item { display: none; }
+    /* The "More" popover becomes part of the row. */
+    .nav-more-menu,
+    .nav-more-menu:not(:popover-open) {
+      background: none;
+      border: 0;
+      box-shadow: none;
+      display: block;
+      inline-size: auto;
+      inset: auto;
+      margin: 0;
+      overflow: visible;
+      padding: 0;
+      position: static;
+    }
+    .nav-tabs, .nav-secondary { display: flex; gap: var(--space-1); }
+    .nav-link {
+      border-radius: 0;
+      min-block-size: 48px;
+    }
+    .nav-link:hover { background: none; color: var(--text); }
+    .nav-secondary .nav-link { color: var(--text-muted); }
+    .nav-link[aria-current], .nav-secondary .nav-link[aria-current] {
+      background: none;
+      box-shadow: inset 0 -3px 0 var(--accent-ink);
+      color: var(--accent-ink);
+    }
+  }
+
+  /* ---------- Offline banner and flash ---------- */
+  .offline-banner {
+    background: var(--warn-bg);
+    border-block-end: 1px solid var(--warn-border);
+    color: var(--warn-fg);
+    font-weight: 600;
+    margin: 0;
+    padding: var(--space-2) var(--gutter);
+    text-align: center;
+  }
+
+  /* ---------- Signed-out pages: centered card ---------- */
+  body.signed-out .page {
+    align-content: center;
+    display: grid;
+    justify-items: center;
+    min-block-size: 100dvh;
+    padding-block: max(var(--space-6), env(safe-area-inset-top)) max(var(--space-6), env(safe-area-inset-bottom));
+  }
+  .auth-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    inline-size: 100%;
+    max-inline-size: 24rem;
+    padding: clamp(var(--space-5), 5vw, var(--space-6));
+  }
+  .auth-brand {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-block-end: var(--space-5);
+    text-align: center;
+  }
+  .auth-brand::before {
+    background: var(--accent);
+    block-size: 48px;
+    content: "";
+    inline-size: 48px;
+    -webkit-mask: var(--icon-brand) center / 48px no-repeat;
+    mask: var(--icon-brand) center / 48px no-repeat;
+  }
+  .auth-brand .app-name { font-size: var(--text-xl); font-weight: 700; margin: 0; }
+  .auth-brand h1 { color: var(--text-muted); font-size: var(--text-md); font-weight: 500; margin: 0; }
+  .auth-card form { display: grid; gap: var(--space-3); }
+  .auth-card form :is(input[type="submit"], button) { inline-size: 100%; margin-block-start: var(--space-2); }
+  .auth-links { font-size: var(--text-sm); margin: var(--space-4) 0 0; text-align: center; }
+
+  /* ---------- Nav icons (inline SVG masks; no network) ---------- */
+  :root {
+    --icon-brand: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2.5a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15Zm-1.25 3v3.25H7.5v2.5h3.25v3.25h2.5v-3.25h3.25v-2.5h-3.25V7.5h-2.5Z'/%3E%3C/svg%3E");
+  }
+  .nav-link-group { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='13' r='7'/%3E%3Cpath d='M12 6V3M5 21h14M3 8v4a2 2 0 0 0 2 2M3 8v3M21 8v13'/%3E%3C/svg%3E"); }
+  .nav-link-patients { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='8' r='4'/%3E%3Cpath d='M2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1M16 4a4 4 0 0 1 0 8M22 21v-1a6 6 0 0 0-4-5.6'/%3E%3C/svg%3E"); }
+  .nav-link-foods { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m21 21-5-5'/%3E%3C/svg%3E"); }
+  .nav-more { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M4 6h16M4 12h16M4 18h16'/%3E%3C/svg%3E"); }
+}

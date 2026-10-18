@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title><%= content_for(:title) || "Meal Planner" %></title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="color-scheme" content="light dark">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="application-name" content="Meal Planner">
     <meta name="mobile-web-app-capable" content="yes">
@@ -13,7 +14,8 @@
 
     <%# The manifest holds no patient data, so every page links it. %>
     <%= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-    <meta name="theme-color" content="#2f6f4f">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#162022" media="(prefers-color-scheme: dark)">
     <% if authenticated? %>
       <%# Turbo's in-memory page snapshots would outlive sign-out; skip them. %>
       <meta name="turbo-cache-control" content="no-cache">
@@ -28,27 +30,48 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
+  <body class="<%= authenticated? ? "signed-in" : "signed-out" %>">
+    <a class="skip-link" href="#main">Skip to content</a>
     <% if authenticated? %>
       <%# Registers the service worker (signed-in pages only) and tells it a session is active. %>
       <div id="pwa" hidden data-controller="pwa"
            data-pwa-offline-caching-value="<%= Current.user.offline_caching_enabled %>"></div>
+      <header class="app-bar">
+        <div class="app-bar-inner">
+          <%= link_to "Meal Planner", group_path, class: "brand" %>
+          <%# Phones: the first three links are a bottom tab bar and the rest open
+              from "More" (a native popover, so it works without JS). Wide
+              screens: every link in one row. Every link is always in the HTML. %>
+          <nav aria-label="Main" class="main-nav">
+            <ul class="nav-tabs">
+              <li><%= nav_link_to "Who's eating", group_path, :group %></li>
+              <li><%= nav_link_to "Patients", patients_path, :patients %></li>
+              <li><%= nav_link_to "Foods", foods_path, :foods %></li>
+              <li class="nav-more-item">
+                <button type="button" class="nav-link nav-more" popovertarget="nav_more"
+                        <%= "data-current" if nav_in_more_menu? %>>More</button>
+              </li>
+            </ul>
+            <div id="nav_more" class="nav-more-menu" popover>
+              <ul class="nav-secondary">
+                <li><%= nav_link_to "Custom items", custom_items_path, :custom_items %></li>
+                <li><%= nav_link_to "AI settings", settings_ai_path, :ai_settings %></li>
+                <li><%= nav_link_to "Offline", settings_offline_path, :offline %></li>
+                <li><%= nav_link_to "Preparation notes", prep_methods_path, :prep_notes %></li>
+              </ul>
+            </div>
+          </nav>
+          <div class="account">
+            <span class="account-user">Signed in as <%= Current.user.email_address %></span>
+            <%= button_to "Sign out", session_path, method: :delete, class: "btn btn-secondary btn-small",
+                  form: { class: "sign-out-form", id: "sign_out", data: { controller: "sign-out", action: "submit->sign-out#submit" } } %>
+          </div>
+        </div>
+      </header>
       <p id="offline_banner" class="offline-banner" role="status" hidden data-controller="offline-banner"></p>
-      <nav aria-label="Main">
-        <%= link_to "Patients", patients_path %>
-        · <%= link_to "Foods", foods_path %>
-        · <%= link_to "Custom items", custom_items_path %>
-        · <%= link_to "Who's eating", group_path %>
-        · <%= link_to "AI settings", settings_ai_path %>
-        · <%= link_to "Offline", settings_offline_path %>
-        · <%= link_to "Preparation notes", prep_methods_path %>
-        · Signed in as <%= Current.user.email_address %>
-        <%= button_to "Sign out", session_path, method: :delete,
-              form: { style: "display:inline", id: "sign_out", data: { controller: "sign-out", action: "submit->sign-out#submit" } } %>
-      </nav>
     <% end %>
-    <% if authenticated? && notice.present? %><p role="status" class="notice"><%= notice %></p><% end %>
-    <main>
+    <main id="main" class="page">
+      <% if authenticated? && notice.present? %><p role="status" class="notice flash"><%= notice %></p><% end %>
       <%= yield %>
     </main>
   </body>
