@@ -59,7 +59,7 @@ RSpec.describe MealSamples::Runner do
     expect(text).to match(/^kid_egg_sesame\s+1\s+3\s+3\s+0\s+2\s+0\.0%\s+25\.0%\s+0\s+0\s+0\.5$/)
     expect(text).to match(/^vegetarian_peanut_mushroom\s+3\s+3\s+0\s+3\s+0\s+100\.0%\s+33\.3%\s+0\s+0\s+0\.5$/)
     expect(text).to match(/^lunch_shellfish_soy\s+1\s+3\s+2\s+1\s+1\s+33\.3%/)
-    expect(text).to match(/^TOTAL\s+10\s+24\s+20\s+4\s+13\s+16\.7%\s+26\.2%\s+0\s+0\s+4\.0$/)
+    expect(text).to match(/^TOTAL\s+10\s+24\s+18\s+6\s+11\s+25\.0%\s+26\.2%\s+0\s+0\s+4\.0$/)
     expect(text).to match(/Most common unresolved ingredient phrases \(top 25\):\n\s+19\s+rice noodles\n\s+14\s+zaatar blend\n/)
 
     gemini = text[/== Google Gemini.*?\n\n/m]

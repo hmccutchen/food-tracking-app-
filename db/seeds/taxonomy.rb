@@ -115,6 +115,9 @@ module TaxonomySeedData
         "wheat" => {
           kind: :allergen,
           aliases: [ "wheat flour", "whole wheat", "wheat starch" ],
+          # Most soy sauce is brewed with wheat. Tamari (an alias) is often
+          # wheat-free but not always, so it is flagged too: worst case wins.
+          members: [ "soy sauce" ],
           children: {
             "flour" => { aliases: [ "all purpose flour", "all-purpose flour", "enriched flour", "white flour" ] },
             "bread crumbs" => { aliases: [ "breadcrumbs", "panko" ] },

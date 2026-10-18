@@ -387,7 +387,7 @@ RSpec.describe Evaluation::Engine do
         "panko bread crumbs" => { "wheat" => :conflict, default: :none },
         "unsweetened almond milk" => { "tree nut" => :conflict, default: :none },
         "greek yogurt" => { "milk" => :conflict, default: :none },
-        "low-sodium soy sauce" => { "soy" => :conflict, default: :none },
+        "low-sodium soy sauce" => { "soy" => :conflict, "wheat" => :conflict, default: :none },
         "grated parmesan cheese" => { "milk" => :conflict, default: :none },
         "lemon juice" => { default: :none },
         # Ambiguous for every allergy: a sauced, canned product, not plain beans.
@@ -483,6 +483,18 @@ RSpec.describe Evaluation::Engine do
       expect(result_for(peanut_allergy, [ "spatchcocked chicken" ]).tier).to eq(unknown)
       IngredientDescriptor.create!(word: "spatchcocked")
       expect(result_for(peanut_allergy, [ "spatchcocked chicken" ]).flags).to be_empty
+    end
+  end
+
+  describe "soy sauce and wheat" do
+    it "is a conflict for a wheat allergy, since most soy sauce is brewed with wheat" do
+      result = result_for(patient_with(allergy: "wheat"), [ "low-sodium soy sauce" ])
+      expect(result.tier).to eq(conflict)
+    end
+
+    it "is a conflict for a gluten restriction, and tamari counts too" do
+      result = result_for(patient_with(cannot: "gluten"), [ "soy sauce", "tamari" ])
+      expect(result.active_flags.select { |flag| flag.tier == conflict }.map(&:ingredient)).to include("soy sauce", "tamari")
     end
   end
 
