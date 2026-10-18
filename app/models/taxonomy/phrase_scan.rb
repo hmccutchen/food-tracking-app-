@@ -17,7 +17,12 @@ module Taxonomy
 
     # [[node, phrase], ...] in phrase order, one entry per node. nodes is
     # { name => node }, aliases is { term => alias with taxonomy_node loaded }.
-    def find(normalized, nodes, aliases)
+    def find(normalized, nodes, aliases) = scan(normalized, nodes, aliases).first
+
+    # [found, leftover]: found as in #find; leftover is the runs of tokens no
+    # match covered, in order ("diced chicken breast in sauce" → [["diced"],
+    # ["in", "sauce"]]).
+    def scan(normalized, nodes, aliases)
       tokens = tokens(normalized)
       taken = Array.new(tokens.size, false)
       found = []
@@ -30,7 +35,14 @@ module Taxonomy
         found << [ gram[:range].begin, node, gram[:phrase] ]
       end
 
-      found.sort_by(&:first).map { |_, node, phrase| [ node, phrase ] }.uniq(&:first)
+      found = found.sort_by(&:first).map { |_, node, phrase| [ node, phrase ] }.uniq(&:first)
+      [ found, leftover(tokens, taken) ]
+    end
+
+    def leftover(tokens, taken)
+      tokens.each_with_index.chunk_while { |(_, a), (_, b)| b == a + 1 && taken[a] == taken[b] }
+        .reject { |run| taken[run.first.last] }
+        .map { |run| run.map { |match, _| match[0] } }
     end
 
     def tokens(normalized)

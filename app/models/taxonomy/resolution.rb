@@ -5,9 +5,13 @@ module Taxonomy
   # contained: [[node, phrase], ...] known names or aliases found inside the
   # text by Resolver's phrase scan ("low-sodium soy sauce" → soy sauce). Only
   # filled when the whole phrase was fuzzy or unresolved; empty otherwise.
-  Resolution = Data.define(:input, :normalized, :node, :match_type, :similarity, :reason, :contained) do
-    def initialize(contained: [], **attributes)
-      super(contained: contained.freeze, **attributes)
+  #
+  # leftover: [["diced"], ["with", "sauce"]] runs of words the scan did not
+  # cover, filled alongside contained. The engine checks them against the
+  # descriptor words.
+  Resolution = Data.define(:input, :normalized, :node, :match_type, :similarity, :reason, :contained, :leftover) do
+    def initialize(contained: [], leftover: [], **attributes)
+      super(contained: contained.freeze, leftover: leftover.freeze, **attributes)
     end
 
     def resolved? = !node.nil?

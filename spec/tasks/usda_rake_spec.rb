@@ -16,7 +16,7 @@ RSpec.describe "usda rake tasks" do
 
   it "imports a folder and prints the summary" do
     path = Rails.root.join("spec/fixtures/files/usda").to_s
-    expect { run("usda:import", path) }.to output(/Imported 26 USDA foods.*USDA SR Legacy: 15.*1 unresolved/m).to_stdout
+    expect { run("usda:import", path) }.to output(/Imported 26 USDA foods.*USDA SR Legacy: 15.*0 unresolved/m).to_stdout
     expect(Food.count).to eq(26)
   end
 

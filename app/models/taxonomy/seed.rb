@@ -8,6 +8,7 @@ module Taxonomy
   # warning is logged.
   module Seed
     DATA_FILE = Rails.root.join("db/seeds/taxonomy.rb")
+    DESCRIPTOR_FILE = Rails.root.join("db/seeds/ingredient_descriptors.rb")
 
     module_function
 
@@ -19,7 +20,14 @@ module Taxonomy
         # "parmesan" after it became its own node. Drop such leftovers.
         TaxonomyAlias.where(term: TaxonomyNode.select(:name))
           .where.not(taxonomy_node_id: TaxonomyNode.custom.select(:id)).delete_all
+        load_descriptors!
       end
+    end
+
+    # The default descriptor words the engine reads with the taxonomy (create-only).
+    def load_descriptors!
+      require DESCRIPTOR_FILE.to_s
+      ::IngredientDescriptorSeedData.load!
     end
 
     def data

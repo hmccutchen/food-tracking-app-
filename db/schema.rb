@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_18_000040) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_18_000120) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -34,6 +34,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_000040) do
     t.index ["fdc_id"], name: "index_foods_on_fdc_id", unique: true
     t.index ["source"], name: "index_foods_on_source"
     t.index ["taxonomy_node_id"], name: "index_foods_on_taxonomy_node_id"
+  end
+
+  create_table "ingredient_descriptors", force: :cascade do |t|
+    t.string "word", null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["word"], name: "index_ingredient_descriptors_on_word", unique: true
   end
 
   create_table "patients", force: :cascade do |t|

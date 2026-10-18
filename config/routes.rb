@@ -18,6 +18,7 @@ Rails.application.routes.draw do
     end
   end
   resources :prep_methods, only: %i[index edit update], path: "preparation-notes"
+  resources :ingredient_descriptors, only: %i[index create edit update], path: "descriptor-words"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

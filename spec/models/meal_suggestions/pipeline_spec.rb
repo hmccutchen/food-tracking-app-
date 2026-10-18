@@ -11,7 +11,7 @@ RSpec.describe MealSuggestions::Pipeline do
 
   let(:peanut_toast) { FakeMealAdapter.meal("Peanut toast", "peanut butter", "toast") }
   let(:shrimp_rice) { FakeMealAdapter.meal("Shrimp rice", "shrimp", "rice") }
-  let(:lentil_soup) { FakeMealAdapter.meal("Lentil soup", "red lentils", "carrot") }
+  let(:lentil_soup) { FakeMealAdapter.meal("Lentil soup", "red lentils", "carrot", "curry paste") }
   let(:soy_noodles) { FakeMealAdapter.meal("Soy noodles", "rice noodles", "soy sauce") }
 
   before do

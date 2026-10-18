@@ -45,7 +45,9 @@ RSpec.describe Usda::Importer do
     expect(almonds).to have_attributes(taxonomy_node: TaxonomyNode.find_by!(name: "almond"), match_type: "exact",
       match_reason: "matched to almond via 'almonds'")
     expect(Food.find_by!(fdc_id: 167_763)).to have_attributes(match_type: "fuzzy")
-    expect(Food.find_by!(fdc_id: 2_346_370)).to have_attributes(taxonomy_node: nil, match_type: "unresolved")
+    # Pork became a common food, so the fixture's pork loin now links.
+    expect(Food.find_by!(fdc_id: 2_346_370)).to have_attributes(taxonomy_node: TaxonomyNode.find_by!(name: "pork"),
+      match_type: "exact")
   end
 
   it "returns a summary of what it did" do
@@ -54,9 +56,9 @@ RSpec.describe Usda::Importer do
     expect(summary.total).to eq(26)
     expect(summary.skipped).to eq("branded_food" => 2, "sub_sample_food" => 1, "market_acquistion" => 1,
       "agricultural_acquisition" => 1, "survey_fndds_food" => 1)
-    expect(summary.links).to eq(linked: 24, fuzzy: 1, unresolved: 1)
+    expect(summary.links).to eq(linked: 25, fuzzy: 1, unresolved: 0)
     expect(summary.to_s).to include("USDA Foundation: 11", "USDA SR Legacy: 15", "inserted 26, updated 0",
-      "Skipped 6 rows", "24 linked, 1 fuzzy (please check), 1 unresolved")
+      "Skipped 6 rows", "25 linked, 1 fuzzy (please check), 0 unresolved")
   end
 
   it "is idempotent and refreshes imported_at on re-run" do

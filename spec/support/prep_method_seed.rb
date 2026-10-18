@@ -10,6 +10,7 @@ module PrepMethodSeedHelper
   def clear_prep_method_seed!
     PrepMethod.delete_all
     TaxonomyNode.delete_all
+    IngredientDescriptor.delete_all
   end
 end
 

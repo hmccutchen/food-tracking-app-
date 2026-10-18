@@ -17,7 +17,7 @@ RSpec.describe Usda::DescriptionMatcher do
     "Beverages, almond milk, unsweetened, shelf stable" => [ "almond", "alias" ],
     "Oil, sesame, salad or cooking" => [ "sesame oil", "exact" ],
     "Sauce, fish, ready-to-serve" => [ "fish sauce", "exact" ],
-    "Milk, whole, 3.25% milkfat, with added vitamin D" => [ "milk", "exact" ],
+    "Milk, whole, 3.25% milkfat, with added vitamin D" => [ "milk", "alias" ],
     "Peanut butter, creamy" => [ "peanut", "alias" ],
     "Flour, wheat, all-purpose, enriched, bleached" => [ "wheat", "alias" ],
     "Crustaceans, shrimp, raw" => [ "shrimp", "exact" ],
@@ -28,8 +28,9 @@ RSpec.describe Usda::DescriptionMatcher do
     "Potatoes, boiled, cooked in skin, flesh, without salt" => [ "potato", "alias" ],
     "Fish, mahimahi, raw" => [ "fish", "exact" ],
     "Tamarinds, raw" => [ "soy sauce", "fuzzy" ],
-    "Pork, loin, boneless, raw" => [ nil, "unresolved" ],
-    "Pork, fresh, loin, whole, separable lean only, raw" => [ nil, "unresolved" ]
+    "Pork, loin, boneless, raw" => [ "pork", "exact" ],
+    "Pork, fresh, loin, whole, separable lean only, raw" => [ "pork", "exact" ],
+    "Durian, raw" => [ nil, "unresolved" ]
   }.each do |description, (name, match_type)|
     it "links #{description.inspect} to #{name || 'nothing'} (#{match_type})" do
       match = matcher.match(description)
@@ -66,13 +67,13 @@ RSpec.describe Usda::DescriptionMatcher do
   end
 
   it "says why an unresolvable description has no link" do
-    match = matcher.match("Pork, loin, boneless, raw")
+    match = matcher.match("Durian, raw")
     expect(match).to be_unresolved
-    expect(match.reason).to eq("no ingredient match for 'Pork, loin, boneless, raw'")
+    expect(match.reason).to eq("no ingredient match for 'Durian, raw'")
   end
 
   it "resolves a batch in the order given with a bounded number of queries" do
-    descriptions = [ "Honey", "Pork, loin, boneless, raw", "Nuts, almonds", "Honey" ]
+    descriptions = [ "Honey", "Durian, raw", "Nuts, almonds", "Honey" ]
     queries = 0
     counter = ->(*, payload) { queries += 1 unless payload[:name] == "SCHEMA" }
     matches = ActiveSupport::Notifications.subscribed(counter, "sql.active_record") { matcher.match_all(descriptions) }

@@ -19,10 +19,11 @@ module Evaluation
       list = Array(ingredients).map(&:to_s).reject { |text| text.strip.empty? }
       patients = load_patients
       resolutions = list.empty? ? [] : @resolver.resolve_all(list)
+      descriptors = Descriptors.new(resolutions.any? { |resolution| resolution.leftover.any? } ? IngredientDescriptor.active_keys : [])
       graph = Coverage.new(resolutions.flat_map { |resolution| [ resolution.node, *resolution.contained_nodes ] }.compact)
 
       results = patients.map do |patient|
-        flags = list.empty? ? [ missing_list_flag ] : patient_flags(patient, resolutions, graph)
+        flags = list.empty? ? [ missing_list_flag ] : patient_flags(patient, resolutions, graph, descriptors)
         PatientResult.new(patient_id: patient.id, profile_version: patient.profile_version, flags:)
       end
 
@@ -45,12 +46,12 @@ module Evaluation
       Flag.new(tier: Tier::UNKNOWN, ingredient: nil, reason: "no ingredient list found", source: :missing_list)
     end
 
-    def patient_flags(patient, resolutions, graph)
+    def patient_flags(patient, resolutions, graph, descriptors)
       restrictions = patient.restrictions.sort_by { |restriction| [ restriction.created_at, restriction.id ] }
       watches_ambiguous = restrictions.any? { |restriction| AMBIGUOUS_TRIGGER_KINDS.include?(restriction.kind) }
 
       resolutions.flat_map do |resolution|
-        IngredientCheck.new(resolution, restrictions, graph, watches_ambiguous).flags
+        IngredientCheck.new(resolution, restrictions, graph, watches_ambiguous, descriptors).flags
       end
     end
 
@@ -119,8 +120,9 @@ module Evaluation
       Target = Data.define(:node, :via, :phrase) # via: :direct, :fuzzy, :contained
       Finding = Data.define(:flag, :restriction, :target)
 
-      def initialize(resolution, restrictions, graph, watches_ambiguous)
+      def initialize(resolution, restrictions, graph, watches_ambiguous, descriptors = Descriptors.new([]))
         @resolution = resolution
+        @descriptors = descriptors
         @restrictions = restrictions
         @graph = graph
         @watches_ambiguous = watches_ambiguous
@@ -204,19 +206,29 @@ module Evaluation
         [ Finding.new(flag:, restriction: nil, target:) ]
       end
 
-      # Unresolved phrases are UNKNOWN. So is a fuzzy phrase when the scan found
-      # nothing known inside it: a loose match alone says what the phrase might
-      # be, not what is in it, so it is never reported as no flags.
+      # Unresolved and fuzzy phrases are UNKNOWN: a loose match says what the
+      # phrase might be, not what is in it. The one exception is a phrase where
+      # the scan found something known and every other word is a descriptor
+      # or a number ("2 cups diced chicken breast"); its contained matches are
+      # still checked like any ingredient.
       def unresolved_flags
-        return [] unless resolution.node.nil? || (resolution.fuzzy? && resolution.contained.empty?)
+        return [] unless resolution.node.nil? || resolution.fuzzy?
+        return [] if resolution.contained.any? && @descriptors.cover_all?(resolution.leftover)
 
-        reason =
+        [ Flag.new(tier: Tier::UNKNOWN, ingredient:, source: :unresolved, reason: unresolved_reason) ]
+      end
+
+      def unresolved_reason
+        base =
           if resolution.fuzzy?
             "'#{ingredient}' only loosely matches #{resolution.node.name} — check the label"
           else
             resolution.reason.presence || "'#{ingredient}' not recognized"
           end
-        [ Flag.new(tier: Tier::UNKNOWN, ingredient:, source: :unresolved, reason:) ]
+        return base if resolution.contained.empty?
+
+        words = @descriptors.uncovered(resolution.leftover).map { |word| "'#{word}'" }.join(", ")
+        "#{base} (not recognized: #{words})"
       end
 
       # A "can" covering the flag's target clears intolerance, condition and
@@ -269,6 +281,54 @@ module Evaluation
         why = cannot_applies? ? "a cannot always wins" : "the #{finding.restriction.kind} still applies"
         Flag.new(tier: finding.flag.tier, ingredient:, source: finding.flag.source, overridden: true,
           override_reason: Flag::MARKED_OK, reason: "you marked '#{can.term}' as can, but #{why}")
+      end
+    end
+
+    # The nurse's active descriptor words ("diced", "cups", "extra-virgin"),
+    # matched as whole token runs. Numbers ("2", "½", "200g" with a descriptor
+    # unit) count as descriptors too.
+    class Descriptors
+      NUMBER = /\A\p{N}+/
+      MAX_TOKENS = 3
+
+      def initialize(keys)
+        @keys = keys.to_set
+      end
+
+      def cover_all?(runs) = runs.all? { |run| uncovered_in(run).empty? }
+
+      # The words in runs that no descriptor covers, for the reason.
+      def uncovered(runs) = runs.flat_map { |run| uncovered_in(run) }.uniq
+
+      private
+
+      # Fewest uncovered words over every way of tiling the run with
+      # descriptors (a small dynamic program: runs are a few words long).
+      def uncovered_in(run)
+        best = Array.new(run.size + 1)
+        best[run.size] = []
+        (run.size - 1).downto(0) do |start|
+          options = [ [ run[start], *best[start + 1] ] ]
+          (1..[ MAX_TOKENS, run.size - start ].min).each do |size|
+            options << best[start + size] if described?(run[start, size])
+          end
+          best[start] = options.min_by(&:size)
+        end
+        best[0]
+      end
+
+      def described?(tokens)
+        phrase = tokens.join(" ")
+        return true if @keys.include?(phrase) || singular?(phrase)
+        return false unless tokens.one? && phrase.match?(NUMBER)
+
+        unit = phrase.sub(/\A[\p{N}]+/, "")
+        unit.empty? || @keys.include?(unit)
+      end
+
+      def singular?(phrase)
+        singular = Taxonomy::Normalizer.singularize(phrase)
+        !singular.nil? && @keys.include?(singular)
       end
     end
 

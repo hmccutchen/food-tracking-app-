@@ -1,0 +1,15 @@
+<% content_for :title, "Edit descriptor word" %>
+<h1>Edit descriptor word: <%= @descriptor.word_was.presence || @descriptor.word %></h1>
+
+<%= form_with model: @descriptor do |form| %>
+  <%= render "shared/errors", record: @descriptor %>
+  <p>
+    <%= form.label :word, "Word" %><br>
+    <%= form.text_field :word, required: true %>
+  </p>
+  <p>
+    <%= form.check_box :active %>
+    <%= form.label :active, "Use this word" %>
+  </p>
+  <p><%= form.submit "Save" %> <%= link_to "Cancel", ingredient_descriptors_path %></p>
+<% end %>

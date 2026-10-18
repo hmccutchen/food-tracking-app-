@@ -151,7 +151,7 @@ RSpec.describe Taxonomy::Resolver do
       "low-sodium soy sauce" => [ [ "sodium", "low-sodium" ], [ "soy sauce", "soy sauce" ] ],
       "shrimp stock" => [ [ "shrimp", "shrimp" ], [ "stock", "stock" ] ],
       "peanut butter cookies" => [ [ "peanut", "peanut butter" ] ],
-      "butter lettuce" => [ [ "butter", "butter" ] ],
+      "cream of tartar" => [ [ "cream", "cream" ] ],
       "all-purpose flour blend" => [ [ "flour", "all-purpose flour" ] ],
       "chopped xyzzy" => []
     }.each do |text, expected|

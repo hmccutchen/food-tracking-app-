@@ -35,7 +35,8 @@ module Taxonomy
       return direct if direct
 
       loose = fuzzy(text, normalized) || unresolved(text, normalized, "'#{text.to_s.strip}' not recognized")
-      loose.with(contained: PhraseScan.find(normalized, nodes, aliases))
+      contained, leftover = PhraseScan.scan(normalized, nodes, aliases)
+      loose.with(contained:, leftover:)
     end
 
     def exact(text, normalized, candidates, nodes)

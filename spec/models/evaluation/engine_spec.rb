@@ -64,18 +64,23 @@ RSpec.describe Evaluation::Engine do
 
     it "a fuzzy-matched ingredient is only a possible conflict, even for an allergy" do
       result = result_for(patient_with(allergy: "tree nut"), [ "almnd flour" ])
-      expect(result.flags.sole).to have_attributes(tier: possible, source: :fuzzy)
-      expect(result.flags.sole.reason).to eq(
+      fuzzy = result.flags.find { |flag| flag.source == :fuzzy }
+      expect(fuzzy).to have_attributes(tier: possible)
+      expect(fuzzy.reason).to eq(
         "almnd flour: fuzzy match to almond, which is under tree nut — check the label (allergy)"
       )
-      expect(result.flags.sole.reason).to include("fuzzy match")
+      # "almnd" is neither a scan match nor a descriptor, so the phrase is also unknown.
+      expect(result.flags.map(&:source)).to eq(%i[fuzzy unresolved])
+      expect(result.tier).to eq(possible)
     end
 
     it "a fuzzy-matched ingredient against a cannot is a possible conflict" do
       result = result_for(patient_with(cannot: "soy sauce"), [ "soy sauc" ])
       # No unknown: the scan finds "soy" inside the misspelling.
-      expect(summary(result.flags)).to eq([ [ :possible_conflict, :fuzzy,
-        "soy sauc: fuzzy match to soy sauce — check the label (cannot)" ] ])
+      expect(summary(result.flags)).to eq([
+        [ :possible_conflict, :fuzzy, "soy sauc: fuzzy match to soy sauce — check the label (cannot)" ],
+        [ :unknown, :unresolved, "'soy sauc' only loosely matches soy sauce — check the label (not recognized: 'sauc')" ]
+      ])
     end
 
     it "an ambiguous ingredient is a possible conflict for a patient with an allergy" do
@@ -191,30 +196,30 @@ RSpec.describe Evaluation::Engine do
 
   describe "restrictions without a taxonomy node (text fallback)" do
     it "the restriction term is unresolved in the seed" do
-      restriction = create(:restriction, kind: :cannot, term: "grapefruit")
+      restriction = create(:restriction, kind: :cannot, term: "durian")
       expect(restriction).to have_attributes(taxonomy_node: nil, match_type: "unresolved")
     end
 
-    it "cannot 'grapefruit' matches 'grapefruit juice' as a whole word" do
-      result = result_for(patient_with(cannot: "grapefruit"), [ "grapefruit juice" ])
+    it "cannot 'durian' matches 'durian juice' as a whole word" do
+      result = result_for(patient_with(cannot: "durian"), [ "durian juice" ])
       expect(summary(result.flags)).to eq([
-        [ :conflict, :cannot, "grapefruit juice: text match to 'grapefruit' (cannot)" ],
-        [ :unknown, :unresolved, "'grapefruit juice' not recognized" ]
+        [ :conflict, :cannot, "durian juice: text match to 'durian' (cannot)" ],
+        [ :unknown, :unresolved, "'durian juice' not recognized" ]
       ])
     end
 
-    it "cannot 'grapefruit' does not match 'grape'" do
-      result = result_for(patient_with(cannot: "grapefruit"), [ "grape", "grape juice" ])
+    it "cannot 'durian' does not match 'duri'" do
+      result = result_for(patient_with(cannot: "durian"), [ "duri", "duri juice" ])
       expect(result.flags.map(&:source)).to all(eq(:unresolved))
     end
 
     it "does not match inside a longer word" do
-      result = result_for(patient_with(allergy: "kiwi"), [ "kiwifruit", "dried kiwi slices" ])
-      expect(result.flags.select { |flag| flag.source == :allergy }.map(&:ingredient)).to eq([ "dried kiwi slices" ])
+      result = result_for(patient_with(allergy: "durian"), [ "durianfruit", "dried durian slices" ])
+      expect(result.flags.select { |flag| flag.source == :allergy }.map(&:ingredient)).to eq([ "dried durian slices" ])
     end
 
     it "a plural restriction term matches its singular" do
-      result = result_for(patient_with(allergy: "kiwis"), [ "kiwi" ])
+      result = result_for(patient_with(allergy: "durians"), [ "durian" ])
       expect(result.flags.map(&:source)).to include(:allergy)
     end
 
@@ -225,7 +230,7 @@ RSpec.describe Evaluation::Engine do
     end
 
     it "applies to a resolved ingredient too" do
-      result = result_for(patient_with(allergy: "grapefruit"), [ "orange and grapefruit" ])
+      result = result_for(patient_with(allergy: "durian"), [ "orange and durian" ])
       expect(result.flags.map(&:source)).to include(:allergy)
     end
 
@@ -284,12 +289,17 @@ RSpec.describe Evaluation::Engine do
         .to include("'soy sauce' appears in 'low-sodium soy sauce' (low sodium)")
     end
 
-    it "keeps the whole-phrase unknown flag" do
-      result = result_for(patient_with(allergy: "tree nut"), [ "roasted almonds" ])
+    it "keeps the whole-phrase unknown flag when a word is not a descriptor" do
+      result = result_for(patient_with(allergy: "tree nut"), [ "candied almonds" ])
       expect(summary(result.flags)).to eq([
-        [ :conflict, :allergy, "'almonds' appears in 'roasted almonds' (allergy)" ],
-        [ :unknown, :unresolved, "'roasted almonds' not recognized" ]
+        [ :conflict, :allergy, "'almonds' appears in 'candied almonds' (allergy)" ],
+        [ :unknown, :unresolved, "'candied almonds' not recognized (not recognized: 'candied')" ]
       ])
+    end
+
+    it "drops the whole-phrase unknown flag when every other word is a descriptor, keeping the match's flags" do
+      result = result_for(patient_with(allergy: "tree nut"), [ "roasted almonds" ])
+      expect(summary(result.flags)).to eq([ [ :conflict, :allergy, "'almonds' appears in 'roasted almonds' (allergy)" ] ])
     end
 
     it "keeps the whole-phrase fuzzy flag" do
@@ -305,13 +315,20 @@ RSpec.describe Evaluation::Engine do
 
     it "takes the longest match: 'peanut butter cookies' is peanut, not butter" do
       expect(result_for(patient_with(allergy: "peanut"), [ "peanut butter cookies" ]).tier).to eq(conflict)
-      expect(result_for(patient_with(allergy: "milk"), [ "peanut butter cookies" ]).flags).to be_empty
+      # Not butter (milk); "cookies" is not a descriptor, so the phrase stays unknown.
+      expect(summary(result_for(patient_with(allergy: "milk"), [ "peanut butter cookies" ]).flags)).to eq([
+        [ :unknown, :unresolved, "'peanut butter cookies' only loosely matches peanut — check the label (not recognized: 'cookies')" ]
+      ])
     end
 
-    it "accepts the documented false positive: 'butter lettuce' is a milk conflict" do
-      result = result_for(patient_with(allergy: "milk"), [ "butter lettuce" ])
+    it "accepts the documented false positive: 'cream of tartar' is a milk conflict" do
+      result = result_for(patient_with(allergy: "milk"), [ "cream of tartar" ])
       expect(result.tier).to eq(conflict)
-      expect(result.active_flags.map(&:reason)).to include("'butter' appears in 'butter lettuce' (allergy)")
+      expect(result.active_flags.map(&:reason)).to include("'cream' appears in 'cream of tartar' (allergy)")
+    end
+
+    it "fixes a false positive with an alias: 'butter lettuce' is lettuce" do
+      expect(result_for(patient_with(allergy: "milk"), [ "butter lettuce" ]).flags).to be_empty
     end
 
     it "runs the ambiguous check on contained nodes" do
@@ -351,28 +368,49 @@ RSpec.describe Evaluation::Engine do
 
       # phrase => { allergy => worst tier }; allergies not listed expect the default.
       {
-        "extra-virgin olive oil" => { default: :unknown },
+        "extra-virgin olive oil" => { default: :none },
         "chicken stock" => { default: :possible_conflict },
-        "whole wheat tortillas" => { "wheat" => :conflict, default: :none },
+        "whole wheat tortillas" => { "wheat" => :conflict, default: :unknown },
         "shredded cheddar cheese" => { "milk" => :conflict, default: :none },
         "toasted sesame oil" => { "sesame" => :conflict, default: :none },
         "fish sauce" => { "fish" => :conflict, default: :none },
-        "egg wash" => { "egg" => :conflict, default: :none },
+        "egg wash" => { "egg" => :conflict, default: :unknown },
         "unsalted butter" => { "milk" => :conflict, default: :none },
-        "large eggs" => { "egg" => :conflict, default: :unknown },
+        "large eggs" => { "egg" => :conflict, default: :none },
         "heavy whipping cream" => { "milk" => :conflict, default: :none },
         "crushed peanuts" => { "peanut" => :conflict, default: :none },
-        "chopped walnuts" => { "tree nut" => :conflict, default: :unknown },
+        "chopped walnuts" => { "tree nut" => :conflict, default: :none },
         "canned tuna in water" => { "fish" => :conflict, default: :none },
-        "cooked shrimp, peeled" => { "shellfish" => :conflict, default: :unknown },
+        "cooked shrimp, peeled" => { "shellfish" => :conflict, default: :none },
         "soy milk" => { "soy" => :conflict, default: :none },
         "sesame seeds" => { "sesame" => :conflict, default: :none },
         "panko bread crumbs" => { "wheat" => :conflict, default: :none },
         "unsweetened almond milk" => { "tree nut" => :conflict, default: :none },
         "greek yogurt" => { "milk" => :conflict, default: :none },
         "low-sodium soy sauce" => { "soy" => :conflict, default: :none },
-        "grated parmesan cheese" => { "milk" => :conflict, default: :unknown },
-        "lemon juice" => { default: :unknown }
+        "grated parmesan cheese" => { "milk" => :conflict, default: :none },
+        "lemon juice" => { default: :none },
+        # Ambiguous for every allergy: a sauced, canned product, not plain beans.
+        "baked beans" => { default: :possible_conflict },
+        # Common whole foods (seeded under "common food") with descriptor words.
+        "2 boneless skinless chicken breasts" => { default: :none },
+        "1 lb lean ground beef" => { default: :none },
+        "1 cup cooked quinoa" => { default: :none },
+        "1 can black beans, rinsed and drained" => { default: :none },
+        "2 cloves garlic, minced" => { default: :none },
+        "1 medium yellow onion, diced" => { default: :none },
+        "fresh baby spinach" => { default: :none },
+        "frozen peas" => { default: :none },
+        "ripe avocado, sliced" => { default: :none },
+        "½ tsp ground cumin" => { default: :none },
+        "salt and black pepper" => { default: :none },
+        "chopped fresh cilantro" => { default: :none },
+        "steamed broccoli florets" => { default: :none },
+        "1 tbsp unsalted butter" => { "milk" => :conflict, default: :none },
+        "rolled oats" => { "wheat" => :none, default: :none },
+        "rice noodles" => { default: :unknown },
+        "teriyaki chicken thighs" => { default: :unknown },
+        "fried chicken" => { default: :unknown }
       }.each do |phrase, expected|
         it "#{phrase.inspect} gets the expected worst tier for each allergy" do
           patients = allergies.index_with { |allergy| patient_with(allergy:) }
@@ -384,6 +422,67 @@ RSpec.describe Evaluation::Engine do
           expect(result.tier).to eq(Evaluation::Tier.worst(wanted.values))
         end
       end
+    end
+  end
+
+  describe "common foods and descriptor words" do
+    let(:peanut_allergy) { patient_with(allergy: "peanut") }
+
+    [ "diced chicken breast", "2 cups cooked brown rice", "fresh blueberries", "extra-virgin olive oil",
+      "minced garlic" ].each do |phrase|
+      it "#{phrase.inspect} has no flags for a peanut allergy" do
+        expect(result_for(peanut_allergy, [ phrase ]).flags).to be_empty
+      end
+    end
+
+    it "keeps 'breaded chicken breast' unknown and says which word" do
+      flags = result_for(peanut_allergy, [ "breaded chicken breast" ]).flags
+      expect(flags.map(&:tier)).to eq([ unknown ])
+      expect(flags.sole.reason).to end_with("(not recognized: 'breaded')")
+    end
+
+    it "keeps 'chicken breast with mystery sauce' unknown" do
+      flags = result_for(peanut_allergy, [ "chicken breast with mystery sauce" ]).flags
+      expect(flags.map(&:tier)).to eq([ unknown ])
+      expect(flags.sole.reason).to end_with("(not recognized: 'mystery', 'sauce')")
+    end
+
+    it "still finds the allergen behind descriptors: 'roasted almonds' is a tree nut conflict" do
+      expect(result_for(patient_with(allergy: "tree nut"), [ "roasted almonds" ]).tier).to eq(conflict)
+    end
+
+    it "flags 'oat milk' for gluten through the oat membership, not for a wheat allergy" do
+      result = result_for(patient_with(intolerance: "gluten"), [ "oat milk" ])
+      expect(summary(result.flags)).to eq([ [ :conflict, :intolerance, "oat milk is in the gluten group (gluten intolerance)" ] ])
+      expect(result_for(patient_with(allergy: "wheat"), [ "oat milk" ]).flags).to be_empty
+    end
+
+    it "flags 'peanut oil' for a peanut allergy" do
+      expect(result_for(peanut_allergy, [ "peanut oil" ]).tier).to eq(conflict)
+    end
+
+    it "checks common foods against conditions: sweet potato is high in potassium" do
+      result = result_for(patient_with(condition: "low potassium"), [ "2 cups cubed sweet potatoes" ])
+      expect(result.tier).to eq(possible)
+    end
+
+    it "counts numbers, fractions and a number with a unit as descriptors" do
+      expect(result_for(peanut_allergy, [ "1 1/2 cups diced carrots", "½ lemon", "200g lentils" ]).flags).to be_empty
+    end
+
+    it "needs a known ingredient: a phrase of only descriptors is unknown" do
+      expect(result_for(peanut_allergy, [ "2 cups diced" ]).tier).to eq(unknown)
+    end
+
+    it "makes a phrase unknown again when the nurse turns a descriptor off" do
+      IngredientDescriptor.find_by!(word: "diced").update!(active: false)
+      expect(result_for(peanut_allergy, [ "diced chicken breast" ]).tier).to eq(unknown)
+    end
+
+    it "ignores a descriptor the nurse adds only once it is active" do
+      expect(result_for(peanut_allergy, [ "spatchcocked chicken" ]).tier).to eq(unknown)
+      IngredientDescriptor.create!(word: "spatchcocked")
+      expect(result_for(peanut_allergy, [ "spatchcocked chicken" ]).flags).to be_empty
     end
   end
 
@@ -671,8 +770,9 @@ RSpec.describe Evaluation::Engine do
       loose = Taxonomy::Resolver.new.resolve_all(phrases).count { |result| !result.match_type.in?(%i[exact alias]) }
 
       expect(several).to eq(single)
-      # 8 base queries (as above) plus the resolver's two fuzzy lookups per loose phrase.
-      expect(several).to eq(8 + (2 * loose))
+      # 8 base queries (as above), one for the descriptor words, plus the
+      # resolver's two fuzzy lookups per loose phrase.
+      expect(several).to eq(9 + (2 * loose))
     end
   end
 

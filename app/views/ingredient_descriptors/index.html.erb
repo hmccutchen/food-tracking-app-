@@ -1,0 +1,41 @@
+<% content_for :title, "Descriptor words" %>
+<h1>Descriptor words</h1>
+<p>
+  When an ingredient phrase isn't recognized as a whole, the check looks for known ingredients inside it.
+  If every other word is a descriptor below (or a number), the phrase isn't marked unknown; for example,
+  "2 cups diced chicken breast" is checked as chicken. The ingredients found are still checked against
+  every restriction.
+</p>
+<p>
+  Only add words that never change what is in the food. Words like
+  <%= IngredientDescriptor::NEVER.join(", ") %> can't be added.
+</p>
+<p><%= link_to "Back to preparation notes", prep_methods_path %></p>
+
+<table class="descriptors-table">
+  <thead>
+    <tr><th>Word</th><th>Used</th><th></th></tr>
+  </thead>
+  <tbody>
+    <% @descriptors.each do |descriptor| %>
+      <tr id="<%= dom_id(descriptor) %>">
+        <td><%= descriptor.word %></td>
+        <td><%= descriptor.active? ? "Yes" : "No (turned off)" %></td>
+        <td><%= link_to "Edit", edit_ingredient_descriptor_path(descriptor), aria: { label: "Edit #{descriptor.word}" } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+<% if @descriptors.empty? %>
+  <p>No descriptor words yet. Run <code>bin/rails db:seed</code> to load the defaults.</p>
+<% end %>
+
+<h2>Add a word</h2>
+<%= form_with model: @descriptor do |form| %>
+  <%= render "shared/errors", record: @descriptor %>
+  <p>
+    <%= form.label :word, "Word" %>
+    <%= form.text_field :word, required: true %>
+    <%= form.submit "Add" %>
+  </p>
+<% end %>

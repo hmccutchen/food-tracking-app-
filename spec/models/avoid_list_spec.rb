@@ -86,7 +86,7 @@ RSpec.describe AvoidList do
     expect(hint).to start_with("includes almond, ")
     expect(hint.delete_prefix("includes ").split(", ").size).to eq(described_class::HINT_SIZE + 1) # six names and "…"
     expect(hint).to end_with("…")
-    expect(entry(described_class.build([ ana ]), "sodium").hint).to start_with("includes bacon, cured meat")
+    expect(entry(described_class.build([ ana ]), "sodium").hint).to start_with("includes bacon, baking soda, cured meat")
     expect(entry(described_class.build([ cy ]), "almond").hint).to be_nil
   end
 
