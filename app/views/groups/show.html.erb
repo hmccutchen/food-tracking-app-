@@ -44,9 +44,11 @@
         <% @selected.each do |patient| %>
           <%= hidden_field_tag "patient_ids[]", patient.id, id: nil %>
         <% end %>
-        <div class="field">
-          <%= label_tag :ingredients, "Ingredients (one per line, or separated by commas)" %>
-          <%= text_area_tag :ingredients, @ingredients_text, rows: 4, data: { turbo_permanent: true } %>
+        <div class="field" data-controller="tags" data-tags-joiner-value="<%= "\n" %>">
+          <%= label_tag :ingredients, "Ingredients" %>
+          <%= text_area_tag :ingredients, @ingredients_text, rows: 4, data: { turbo_permanent: true },
+                aria: { describedby: "ingredients_help" } %>
+          <small id="ingredients_help">Press Enter or type a comma after each one. You can paste a whole list.</small>
         </div>
         <div class="actions"><%= form.submit "Check", name: nil %></div>
       <% end %>

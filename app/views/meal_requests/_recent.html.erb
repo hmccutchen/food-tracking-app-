@@ -1,6 +1,12 @@
 <%# locals: (meal_requests:) %>
 <section id="recent_meal_requests" class="recent-meals" aria-labelledby="recent_meal_requests_heading">
-  <h2 id="recent_meal_requests_heading">Recent meal suggestions</h2>
+  <div class="recent-meals-header">
+    <h2 id="recent_meal_requests_heading">Recent meal suggestions</h2>
+    <% if meal_requests.any?(&:finished?) %>
+      <%= button_to "Clear all", clear_meal_requests_path, method: :delete, class: "btn btn-secondary btn-small",
+            form: { data: { turbo_confirm: "Remove all finished meal suggestions?" } } %>
+    <% end %>
+  </div>
   <div id="meal_requests">
     <% meal_requests.each do |meal_request| %>
       <%= render "meal_requests/meal_request", meal_request: %>

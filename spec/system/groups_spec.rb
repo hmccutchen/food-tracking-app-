@@ -28,7 +28,7 @@ RSpec.describe "Who's eating", js: true do
     within("#avoid_section_limit") { expect(page).to have_content("sodium") }
     expect(page).to have_current_path(/patient_ids/)
 
-    fill_in "Ingredients (one per line, or separated by commas)", with: "almond flour, soy sauce"
+    fill_in "Ingredients", with: "almond flour, soy sauce"
     click_button "Check"
 
     within("#evaluation_result") do

@@ -1,10 +1,11 @@
 # "Suggest meals" on the Who's eating page. create queues SuggestMealsJob
 # (ids only); show is what the "Finding meals…" placeholder polls when no
-# websocket is available; recheck re-runs only the engine (never the AI).
+# websocket is available; recheck re-runs only the engine (never the AI);
+# destroy and clear remove finished cards so the page doesn't keep growing.
 class MealRequestsController < ApplicationController
   RECENT = 5
 
-  before_action :set_meal_request, only: %i[show recheck]
+  before_action :set_meal_request, only: %i[show recheck destroy]
 
   # The "Recent meal suggestions" frame on the Who's eating page. A separate,
   # network-only request, so meal results never sit in the offline cache.
@@ -44,7 +45,34 @@ class MealRequestsController < ApplicationController
     end
   end
 
+  # A card still finding meals stays: its job is about to write to it.
+  def destroy
+    @meal_request.destroy! if @meal_request.finished?
+    respond_to do |format|
+      format.turbo_stream { render_removed([ @meal_request ].select(&:destroyed?)) }
+      format.html { redirect_to group_path(patient_ids: @meal_request.current_patient_ids), status: :see_other }
+    end
+  end
+
+  # Removes every finished card; ones still finding meals stay.
+  def clear
+    removed = Current.user.meal_requests.where.not(status: MealRequest::PENDING).destroy_all
+    respond_to do |format|
+      format.turbo_stream { render_removed(removed) }
+      format.html { redirect_to group_path, status: :see_other }
+    end
+  end
+
   private
+
+  def render_removed(removed)
+    streams = removed.map { |meal_request| turbo_stream.remove(meal_request) }
+    unless Current.user.meal_requests.exists?
+      streams << turbo_stream.replace("recent_meal_requests", partial: "meal_requests/recent",
+        locals: { meal_requests: [] })
+    end
+    render turbo_stream: streams
+  end
 
   # Only the nurse's own requests; anyone else's is a 404.
   def set_meal_request

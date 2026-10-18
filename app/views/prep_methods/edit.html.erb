@@ -9,9 +9,10 @@
     <%= form.label :name, "Method name" %>
     <%= form.text_field :name, required: true %>
   </div>
-  <div class="field">
-    <%= form.label :keywords_text, "Keywords (separated by commas; whole words only)" %>
-    <%= form.text_area :keywords_text, rows: 2 %>
+  <div class="field" data-controller="tags">
+    <%= form.label :keywords_text, "Keywords (whole words only)" %>
+    <%= form.text_area :keywords_text, rows: 2, aria: { describedby: "prep_keywords_help" } %>
+    <small id="prep_keywords_help">Press Enter or type a comma after each one.</small>
   </div>
   <div class="field">
     <%= form.label :risk, "Why it's a risk" %>

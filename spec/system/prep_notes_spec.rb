@@ -12,7 +12,7 @@ RSpec.describe "Preparation notes on a checked meal", js: true do
     expect(page).to have_content("Signed in as")
 
     visit group_path(patient_ids: [ ana.id ])
-    fill_in "Ingredients (one per line, or separated by commas)", with: "tempura shrimp"
+    fill_in "Ingredients", with: "tempura shrimp"
     click_button "Check"
 
     within("#evaluation_result") do
@@ -28,7 +28,7 @@ RSpec.describe "Preparation notes on a checked meal", js: true do
     expect(JSON.parse(stored)).to contain_exactly(match(/\Aprep-\d+-\h{16}\z/))
 
     # A fresh result with the same note stays dismissed.
-    fill_in "Ingredients (one per line, or separated by commas)", with: "tempura shrimp, zzqx"
+    fill_in "Ingredients", with: "tempura shrimp, zzqx"
     click_button "Check"
     within("#evaluation_result") do
       expect(page).to have_content("'zzqx' not recognized")

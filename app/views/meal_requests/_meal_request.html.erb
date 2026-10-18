@@ -9,7 +9,14 @@
     <%= turbo_stream_from meal_request %>
   <% end %>
   <header class="meal-request-header">
-    <h3>Meals for <%= names.values.to_sentence.presence || "patients no longer on file" %></h3>
+    <div class="meal-request-title">
+      <h3>Meals for <%= names.values.to_sentence.presence || "patients no longer on file" %></h3>
+      <% if meal_request.finished? %>
+        <%= button_to "Remove", meal_request_path(meal_request), method: :delete,
+              class: "btn btn-secondary btn-small", form_class: "remove-meal-request",
+              aria: { label: "Remove these meal suggestions" } %>
+      <% end %>
+    </div>
     <p class="meal-request-meta">
       Asked <%= time_tag meal_request.created_at, meal_request.created_at.to_fs(:short) %>
       <% if meal_request.request_text.present? %>· “<%= meal_request.request_text %>”<% end %>
