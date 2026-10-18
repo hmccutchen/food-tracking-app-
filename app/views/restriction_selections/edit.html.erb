@@ -1,0 +1,60 @@
+<% content_for :title, "#{@selection.heading} for #{@patient.display_name}" %>
+<h1><%= @selection.heading %> for <%= @patient.display_name %></h1>
+<p class="lead">Tick everything that applies, then save. Come back any time to add or remove items.</p>
+<% if @selection.kind == "can" %>
+  <p class="help">Marking something "Can have" never hides an allergy. It stays visible as "you marked this OK".</p>
+<% end %>
+
+<% selected = @selection.selected_node_ids %>
+<% noted = @selection.noted_node_ids %>
+<%= form_with url: patient_restriction_selection_path(@patient, @selection.kind), method: :patch,
+      id: "restriction_selection", class: "picker", data: { controller: "picker" } do |form| %>
+  <%= hidden_field_tag "node_ids[]", "", id: nil %>
+
+  <div class="picker-bar">
+    <div class="field picker-search">
+      <%= label_tag :picker_filter, "Find an item" %>
+      <%= search_field_tag :picker_filter, nil, autocomplete: "off", placeholder: "e.g. almond, milk, sodium",
+            data: { picker_target: "filter", action: "input->picker#filter" } %>
+    </div>
+    <p class="picker-count" role="status" data-picker-target="count"><%= pluralize(selected.size, "item") %> ticked</p>
+    <div class="actions">
+      <%= form.submit "Save list" %>
+      <%= link_to "Cancel", patient_path(@patient), class: "btn btn-secondary" %>
+    </div>
+  </div>
+
+  <p class="help">Ticking a group (marked "and everything in it") covers every item listed under it.</p>
+  <p class="picker-empty" hidden data-picker-target="empty">Nothing on the list matches. To add something that isn't
+    listed, use "Add a restriction" on the patient page.</p>
+
+  <% @picker.sections.each do |section| %>
+    <fieldset class="picker-section" data-picker-target="section">
+      <legend><%= section.title %></legend>
+      <ul class="picker-list">
+        <% section.entries.each do |entry| %>
+          <% node = entry.node %>
+          <li class="<%= class_names("check-row picker-item", "picker-group": entry.covers_children) %>" data-picker-target="item" data-name="<%= node.name %>">
+            <%= check_box_tag "node_ids[]", node.id, selected.include?(node.id), id: "node_#{node.id}",
+                  data: { action: "change->picker#count" } %>
+            <label for="node_<%= node.id %>">
+              <%= node.name %>
+              <% if entry.covers_children %><small>and everything in it</small><% end %>
+              <% if noted.include?(node.id) %><small>has a note; unticking removes it</small><% end %>
+            </label>
+          </li>
+        <% end %>
+      </ul>
+    </fieldset>
+  <% end %>
+
+  <% if (unmatched = @selection.unmatched).any? %>
+    <section class="panel picker-unmatched" aria-labelledby="unmatched_heading">
+      <h2 id="unmatched_heading">Also on this list (typed, not recognized)</h2>
+      <p class="help">These stay as they are. They're checked by their exact words. Edit or remove them on the patient page.</p>
+      <ul><% unmatched.each do |restriction| %><li><%= restriction.term %></li><% end %></ul>
+    </section>
+  <% end %>
+
+  <div class="actions"><%= form.submit "Save list", id: nil %></div>
+<% end %>

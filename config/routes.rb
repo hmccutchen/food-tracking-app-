@@ -3,6 +3,8 @@ Rails.application.routes.draw do
   resources :passwords, param: :token
   resources :patients do
     resources :restrictions, only: %i[create edit update destroy]
+    # /patients/:id/choose/allergy/edit: pick many items of one kind at once.
+    resources :restriction_selections, path: "choose", param: :kind, only: %i[edit update]
   end
   resources :foods, only: :index
   resources :custom_items, path: "custom-items" do

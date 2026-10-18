@@ -1,0 +1,68 @@
+require "rails_helper"
+
+RSpec.describe "Choosing several restrictions at once" do
+  before(:context) { Taxonomy::Seed.load! }
+  after(:context) { TaxonomyNode.delete_all }
+
+  let(:user) { create(:user) }
+  let(:patient) { create(:patient, user:) }
+
+  def node(name) = TaxonomyNode.find_by!(name:)
+
+  before { sign_in(user) }
+
+  it "links each kind on the patient page to its checklist, even when empty" do
+    get patient_path(patient)
+    Restriction.kinds.each_key do |kind|
+      expect(response.body).to include(%(href="#{edit_patient_restriction_selection_path(patient, kind)}"))
+    end
+    expect(response.body).to include("None.")
+  end
+
+  it "shows the checklist with current items ticked and typed-only terms listed" do
+    patient.restrictions.create!(kind: "allergy", term: "almond")
+    patient.restrictions.create!(kind: "allergy", term: "grandma's stew")
+    get edit_patient_restriction_selection_path(patient, "allergy")
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Allergies for #{patient.display_name}", "Find an item", "1 item ticked")
+    page = Nokogiri::HTML(response.body)
+    expect(page.at_css("#node_#{node("almond").id}")["checked"]).to eq("checked")
+    expect(page.at_css("#node_#{node("milk").id}")["checked"]).to be_nil
+    expect(response.body).to include("Also on this list (typed, not recognized)", "grandma&#39;s stew")
+  end
+
+  it "saves the ticked set and says what changed" do
+    patient.restrictions.create!(kind: "allergy", term: "almond")
+    patch patient_restriction_selection_path(patient, "allergy"), params: { node_ids: [ "", node("milk").id, node("egg").id ] }
+    expect(response).to redirect_to(patient_path(patient))
+    expect(flash[:notice]).to eq("Allergies: added egg and milk; removed almond.")
+    expect(patient.restrictions.allergy.map(&:term)).to contain_exactly("milk", "egg")
+  end
+
+  it "clears the kind when everything is unticked (only the blank placeholder is sent)" do
+    patient.restrictions.create!(kind: "cannot", term: "shrimp")
+    patch patient_restriction_selection_path(patient, "cannot"), params: { node_ids: [ "" ] }
+    expect(flash[:notice]).to eq("Cannot have: removed shrimp.")
+    expect(patient.restrictions.reload).to be_empty
+  end
+
+  it "warns on the Can have list that it never hides an allergy" do
+    get edit_patient_restriction_selection_path(patient, "can")
+    expect(response.body).to include("Can have for", "never hides an allergy")
+  end
+
+  it "only reaches the nurse's own patients and real kinds" do
+    other = create(:patient)
+    get edit_patient_restriction_selection_path(other, "allergy")
+    expect(response).to have_http_status(:not_found)
+    get edit_patient_restriction_selection_path(patient, "maybe")
+    expect(response).to have_http_status(:not_found)
+    patch patient_restriction_selection_path(other, "allergy"), params: { node_ids: [ node("egg").id ] }
+    expect(other.restrictions).to be_empty
+  end
+
+  it "explains 'Match automatically' on the single-item form" do
+    get patient_path(patient)
+    expect(response.body).to include(%("Match automatically" looks up what you typed))
+  end
+end
