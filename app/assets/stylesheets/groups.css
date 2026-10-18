@@ -41,7 +41,7 @@
   .patient-picker label {
     align-items: center;
     background: var(--surface);
-    border: 1px solid var(--border-strong);
+    border: 1px solid var(--border-control);
     border-radius: var(--radius-pill);
     cursor: pointer;
     display: flex;

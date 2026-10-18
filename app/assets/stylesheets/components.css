@@ -37,7 +37,7 @@
 
   .btn-secondary, .dismiss, .recheck {
     background: var(--surface);
-    border-color: var(--border-strong);
+    border-color: var(--border-control);
     color: var(--text);
   }
   .btn-secondary:hover, .dismiss:hover, .recheck:hover {

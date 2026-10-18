@@ -62,7 +62,7 @@
 
   :where(input:not([type="checkbox"], [type="radio"], [type="submit"], [type="button"], [type="hidden"]), select, textarea) {
     background: var(--surface);
-    border: 1px solid var(--border-strong);
+    border: 1px solid var(--border-control);
     border-radius: var(--radius-sm);
     color: var(--text);
     font: inherit;

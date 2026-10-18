@@ -6,7 +6,7 @@ module NavigationHelper
     "patients" => :patients, "restrictions" => :patients,
     "foods" => :foods,
     "custom_items" => :custom_items,
-    "settings/ai" => :ai_settings,
+    "settings/ai" => :ai_settings, "settings/ai_credentials" => :ai_settings,
     "settings/offline" => :offline,
     "prep_methods" => :prep_notes, "ingredient_descriptors" => :prep_notes
   }.freeze
