@@ -1,12 +1,13 @@
 <%# One checklist item; a group's items are nested inside it, so the page shows exactly what ticking it covers. %>
 <% node = entry.node %>
-<li class="<%= class_names("picker-item", "picker-group": entry.covers_children) %>" data-picker-target="item" data-name="<%= node.name %>">
+<li class="<%= class_names("picker-item", "picker-group": entry.covers_children || entry.linked.any?) %>" data-picker-target="item" data-name="<%= node.name %>">
   <div class="check-row">
     <%= check_box_tag "node_ids[]", node.id, selected.include?(node.id), id: "node_#{node.id}",
           data: { action: "change->picker#count" } %>
     <label for="node_<%= node.id %>">
       <%= node.name %>
       <% if entry.covers_children %><small>and everything indented under it</small><% end %>
+      <% if entry.linked.any? %><small>also covers <%= entry.linked.to_sentence %> (listed elsewhere)</small><% end %>
       <% if noted.include?(node.id) %><small>has a note; unticking removes it</small><% end %>
     </label>
   </div>

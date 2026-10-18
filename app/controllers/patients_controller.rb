@@ -35,7 +35,8 @@ class PatientsController < ApplicationController
   end
 
   def destroy
-    @patient.destroy!
+    # Patient row first, then its restrictions, as every restriction writer does.
+    @patient.with_lock { @patient.destroy! }
     redirect_to patients_path, notice: "Patient removed.", status: :see_other
   end
 

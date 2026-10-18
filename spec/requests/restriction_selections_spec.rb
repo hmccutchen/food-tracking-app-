@@ -96,6 +96,12 @@ RSpec.describe "Choosing several restrictions at once" do
     expect(nested).not_to include(node("cream").id)
   end
 
+  it "says which foods listed elsewhere a group also covers" do
+    get edit_patient_restriction_selection_path(patient, "can")
+    expect(response.body).to include("also covers oat and soy sauce (listed elsewhere)")
+    expect(response.body).to include("Unticking an item inside a ticked group doesn't take it out of that group.")
+  end
+
   it "warns on the Can have list that it never hides an allergy" do
     get edit_patient_restriction_selection_path(patient, "can")
     expect(response.body).to include("Can have for", "never hides an allergy")

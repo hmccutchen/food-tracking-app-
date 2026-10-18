@@ -105,10 +105,12 @@ class CustomItem
   # precedence rule applies unchanged and each change bumps that profile.
   def update_marks(choices)
     choices = choices.to_h.transform_keys(&:to_s)
-    existing = mark_restrictions.group_by(&:patient_id)
 
     Restriction.transaction do
       lock_patients!
+      # Read only once the patients are locked, so a checklist save that just
+      # removed a mark can't leave a stale copy that looks already in place.
+      existing = mark_restrictions.group_by(&:patient_id)
       user.patients.find_each do |patient|
         wanted = choices[patient.id.to_s].presence_in(MARKS)
         current, *extra = existing.fetch(patient.id, [])
