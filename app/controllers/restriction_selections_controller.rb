@@ -7,8 +7,14 @@ class RestrictionSelectionsController < ApplicationController
   end
 
   def update
-    result = @selection.update(params.fetch(:node_ids, []))
+    result = @selection.update(params.fetch(:node_ids, []), expected_version: params.require(:profile_version))
     redirect_to @patient, notice: summary(result)
+  rescue RestrictionSelection::Stale
+    @patient.reload
+    @picker = RestrictionPicker.new
+    flash.now[:alert] = "#{@patient.display_name}'s profile changed in another window. Nothing was saved. " \
+      "This list now shows the latest; tick again and save."
+    render :edit, status: :conflict
   end
 
   private

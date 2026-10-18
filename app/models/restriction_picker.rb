@@ -1,4 +1,5 @@
-# The checklist on the "choose items" page: every taxonomy node, grouped into
+# The checklist on the "choose items" page: every taxonomy node (so saving an
+# unchanged page can never drop a restriction it didn't show), grouped into
 # sections a nurse can scan (allergens, nutrients, common food categories,
 # everything else). A group comes first, followed by everything under it;
 # ticking a group covers all of those.
@@ -26,7 +27,11 @@ class RestrictionPicker
     sections = allergens.map { |root| section(title_for(root), tree(root)) }
     sections << section("Nutrients", nutrients.flat_map { |root| tree(root) }) if nutrients.any?
     sections.concat(groups.map { |root| section(title_for(root), tree(root)) })
-    sections.concat(common.flat_map { |root| @children.fetch(root.id, []) }.map { |category| section(title_for(category), tree(category)) })
+    common.each do |root|
+      # The umbrella itself rarely makes sense, but "Match to" allows it.
+      sections << section("All common foods", [ Entry.new(node: root, covers_children: true) ])
+      sections.concat(@children.fetch(root.id, []).map { |category| section(title_for(category), tree(category)) })
+    end
     sections << section("Other foods", single.flat_map { |root| tree(root) }) if single.any?
     sections
   end

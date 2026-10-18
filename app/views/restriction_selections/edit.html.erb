@@ -1,5 +1,6 @@
 <% content_for :title, "#{@selection.heading} for #{@patient.display_name}" %>
 <h1><%= @selection.heading %> for <%= @patient.display_name %></h1>
+<%= tag.p(flash[:alert], class: "flash-alert", role: "alert") if flash[:alert] %>
 <p class="lead">Tick everything that applies, then save. Come back any time to add or remove items.</p>
 <% if @selection.kind == "can" %>
   <p class="help">Marking something "Can have" never hides an allergy. It stays visible as "you marked this OK".</p>
@@ -10,6 +11,7 @@
 <%= form_with url: patient_restriction_selection_path(@patient, @selection.kind), method: :patch,
       id: "restriction_selection", class: "picker", data: { controller: "picker" } do |form| %>
   <%= hidden_field_tag "node_ids[]", "", id: nil %>
+  <%= hidden_field_tag :profile_version, @patient.profile_version, id: nil %>
 
   <div class="picker-bar">
     <div class="field picker-search">

@@ -4,7 +4,7 @@ class RestrictionsController < ApplicationController
 
   def create
     @restriction = @patient.restrictions.build(restriction_params)
-    if @restriction.save
+    if @patient.with_lock { @restriction.save }
       respond_to do |format|
         format.turbo_stream { render_changes(new_restriction: @patient.restrictions.build) }
         format.html { redirect_to @patient, notice: "Restriction added." }
@@ -24,7 +24,7 @@ class RestrictionsController < ApplicationController
   end
 
   def update
-    if @restriction.update(restriction_params)
+    if @patient.with_lock { @restriction.update(restriction_params) }
       respond_to do |format|
         format.turbo_stream { render_changes }
         format.html { redirect_to @patient, notice: "Restriction updated." }
@@ -41,7 +41,7 @@ class RestrictionsController < ApplicationController
   end
 
   def destroy
-    @restriction.destroy!
+    @patient.with_lock { @restriction.destroy! }
     respond_to do |format|
       format.turbo_stream { render_changes }
       format.html { redirect_to @patient, notice: "Restriction removed.", status: :see_other }
@@ -50,6 +50,8 @@ class RestrictionsController < ApplicationController
 
   private
 
+  # Writes lock the patient row first, like RestrictionSelection#update, so
+  # the two never interleave or take locks in a different order.
   def set_patient
     @patient = Current.user.patients.find(params[:patient_id])
   end

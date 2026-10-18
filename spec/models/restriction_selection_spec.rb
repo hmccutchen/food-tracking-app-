@@ -58,6 +58,18 @@ RSpec.describe RestrictionSelection do
     expect(result.tier).to eq(Evaluation::Tier::CONFLICT)
   end
 
+  it "refuses a save built from an older profile version, changing nothing" do
+    version = patient.reload.profile_version
+    patient.restrictions.create!(kind: "allergy", term: "egg") # another tab saved meanwhile
+    expect { selection.update([ node("milk").id ], expected_version: version) }.to raise_error(described_class::Stale)
+    expect(patient.restrictions.reload.map(&:term)).to eq([ "egg" ])
+  end
+
+  it "saves when the profile version still matches" do
+    result = selection.update([ node("milk").id ], expected_version: patient.reload.profile_version)
+    expect(result.added).to eq([ "milk" ])
+  end
+
   it "rejects an unknown kind" do
     expect { described_class.new(patient, "maybe") }.to raise_error(ArgumentError)
   end

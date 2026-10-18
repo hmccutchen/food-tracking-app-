@@ -10,6 +10,9 @@ class RestrictionSelection
     def changed? = added.any? || removed.any?
   end
 
+  # The profile changed after the page was loaded (another tab or device).
+  class Stale < StandardError; end
+
   attr_reader :patient, :kind
 
   def initialize(patient, kind)
@@ -37,17 +40,23 @@ class RestrictionSelection
 
   # Makes the picked nodes of this kind exactly `node_ids`: removes the
   # restrictions whose node was unticked, adds one per newly ticked node.
-  # Unknown ids are ignored.
-  def update(node_ids)
+  # Unknown ids are ignored. With `expected_version` (the profile version the
+  # page was built from), raises Stale if the profile changed since, so two
+  # saves can't combine into a set neither of them chose. The patient row is
+  # locked for the whole read-compare-write, as single-item edits do too.
+  def update(node_ids, expected_version: nil)
     wanted = TaxonomyNode.where(id: Array(node_ids).compact_blank).pluck(:id).to_set
-    picked = restrictions.where.not(taxonomy_node_id: nil).to_a
-    to_remove = picked.reject { |restriction| wanted.include?(restriction.taxonomy_node_id) }
-    to_add = TaxonomyNode.where(id: (wanted - picked.to_set(&:taxonomy_node_id)).to_a).order(:name)
 
-    Restriction.transaction do
+    patient.with_lock do
+      raise Stale if expected_version && patient.profile_version != expected_version.to_i
+
+      picked = restrictions.where.not(taxonomy_node_id: nil).to_a
+      to_remove = picked.reject { |restriction| wanted.include?(restriction.taxonomy_node_id) }
+      to_add = TaxonomyNode.where(id: (wanted - picked.to_set(&:taxonomy_node_id)).to_a).order(:name)
+
       to_remove.each(&:destroy!)
       to_add.each { |node| patient.restrictions.create!(kind:, term: node.name, manual_node_id: node.id) }
+      Result.new(added: to_add.map(&:name), removed: to_remove.map(&:term).uniq.sort)
     end
-    Result.new(added: to_add.map(&:name), removed: to_remove.map(&:term).uniq.sort)
   end
 end

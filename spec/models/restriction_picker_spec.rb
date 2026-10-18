@@ -6,10 +6,11 @@ RSpec.describe RestrictionPicker do
 
   let(:sections) { described_class.new.sections }
 
-  it "lists every node except the 'common food' umbrella exactly once" do
+  # A node left off the page would read as unticked on save and be removed.
+  it "lists every node exactly once, the 'common food' umbrella included" do
     names = sections.flat_map { |section| section.entries.map { |entry| entry.node.name } }
     expect(names.tally.values.uniq).to eq([ 1 ])
-    expect(names).to match_array(TaxonomyNode.where.not(name: "common food").pluck(:name))
+    expect(names).to match_array(TaxonomyNode.pluck(:name))
   end
 
   it "puts allergens first, each group followed by what it covers" do
