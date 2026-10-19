@@ -1,17 +1,26 @@
 <div id="restrictions">
   <% groups = patient.restrictions_by_kind %>
   <% if groups.values.all?(&:empty?) %>
-    <p class="empty-state">No restrictions yet.</p>
+    <p class="empty-state">No restrictions yet. Use "Choose items" to tick several at once.</p>
   <% end %>
   <% groups.each do |kind, restrictions| %>
-    <% next if restrictions.empty? %>
+    <% heading = Restriction::KIND_LABELS.fetch(kind).first %>
     <section id="restrictions_<%= kind %>" class="restriction-group" data-kind="<%= kind %>" aria-labelledby="heading_<%= kind %>">
-      <h3 id="heading_<%= kind %>"><%= Restriction::KIND_LABELS.fetch(kind).first %></h3>
-      <ul class="restriction-list">
-        <% restrictions.each do |restriction| %>
-          <%= render "restrictions/restriction", restriction: restriction %>
-        <% end %>
-      </ul>
+      <div class="restriction-group-header">
+        <h3 id="heading_<%= kind %>"><%= heading %></h3>
+        <%= link_to "Choose items", edit_patient_restriction_selection_path(patient, kind),
+              class: "btn btn-secondary btn-small", data: { turbo_frame: "_top" },
+              aria: { label: "Choose items: #{heading}" } %>
+      </div>
+      <% if restrictions.any? %>
+        <ul class="restriction-list">
+          <% restrictions.each do |restriction| %>
+            <%= render "restrictions/restriction", restriction: restriction %>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="restriction-none">None.</p>
+      <% end %>
     </section>
   <% end %>
 </div>

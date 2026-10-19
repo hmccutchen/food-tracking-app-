@@ -44,13 +44,23 @@
 
   /* Restrictions grouped by kind; each one a tidy row. */
   .restriction-group { margin: 0 0 var(--space-4); }
+  .restriction-group-header {
+    align-items: center;
+    flex-wrap: nowrap;
+    display: flex;
+    gap: var(--space-2);
+    justify-content: space-between;
+    margin: 0 0 var(--space-2);
+  }
   .restriction-group h3 {
     color: var(--text-muted);
     font-size: var(--text-sm);
     letter-spacing: 0.04em;
-    margin: 0 0 var(--space-2);
+    margin: 0;
     text-transform: uppercase;
   }
+  .restriction-group-header .btn { flex: none; white-space: nowrap; }
+  .restriction-none { color: var(--text-muted); font-size: var(--text-sm); margin: 0; }
   .restriction-list {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -133,4 +143,49 @@
   .provider-card .status:empty { display: none; }
   .key-status { font-weight: 600; margin-block-end: var(--space-1); }
   .provider-card .form { margin-block-end: var(--space-3); }
+
+  /* "Choose items": a searchable checklist of every food and group. Not
+     sticky; Save is repeated at the bottom instead (the app bar is sticky). */
+  .picker-bar {
+    align-items: end;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-4);
+    margin-block-end: var(--space-3);
+  }
+  .picker-search { flex: 1 1 16rem; margin: 0; }
+  .picker-count { color: var(--text-muted); font-size: var(--text-sm); margin: 0; }
+  .picker-bar .actions { margin: 0; }
+  .picker-empty { color: var(--text-muted); }
+  .picker-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin: 0 0 var(--space-4);
+    padding: var(--space-2) var(--space-3) var(--space-3);
+  }
+  .picker-section legend { font-weight: 700; padding-inline: var(--space-1); }
+  .picker-list {
+    display: grid;
+    gap: 0 var(--space-4);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .picker-item { margin: 0; }
+  /* A group takes a full row and holds what it covers, indented with a rule
+     down the side so it's clear where the group ends. */
+  .picker-group { grid-column: 1 / -1; }
+  .picker-group > .check-row label { font-weight: 700; }
+  .picker-sub {
+    border-inline-start: 2px solid var(--border);
+    margin-block-end: var(--space-2);
+    margin-inline-start: 0.6rem;
+    padding-inline-start: var(--space-3);
+  }
+  /* While searching, a group whose items are all hidden shows no empty box. */
+  .picker-sub:not(:has(> li:not([hidden]))) { display: none; }
+  .picker-item label small { color: var(--text-muted); display: block; font-weight: 400; }
+  .picker-unmatched { margin-block-end: var(--space-4); }
 }

@@ -23,7 +23,14 @@
     <div class="field">
       <%= form.label :manual_node_id, "Match to (optional)", for: "#{frame_id}_manual_node_id" %>
       <%= form.collection_select :manual_node_id, TaxonomyNode.order(:name), :id, :name,
-            { include_blank: "Match automatically" }, id: "#{frame_id}_manual_node_id" %>
+            { include_blank: "Match automatically" }, id: "#{frame_id}_manual_node_id",
+            aria: { describedby: "#{frame_id}_match_help" } %>
+      <small id="<%= frame_id %>_match_help">
+        "Match automatically" looks up what you typed in the app's food list: the exact name, another name it
+        knows ("no nuts" → tree nut), or a close spelling (marked "please check"). If nothing fits, it shows as
+        "not recognized" and only ingredients with those exact words are flagged. Pick an item here to choose the
+        match yourself.
+      </small>
     </div>
 
     <div class="actions">

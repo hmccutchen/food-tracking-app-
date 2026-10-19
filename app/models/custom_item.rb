@@ -68,6 +68,7 @@ class CustomItem
     return false unless valid?
 
     TaxonomyNode.transaction do
+      lock_patients!
       node.assign_attributes(name:, ingredients_text: ingredients_text.to_s.strip.presence, parent_id:,
         source: "custom", created_by: user)
       unless node.save
@@ -86,6 +87,7 @@ class CustomItem
   # the resolver; with the item gone they fall back to text matching.
   def destroy!
     TaxonomyNode.transaction do
+      lock_patients!
       pointing = user.restrictions.where(taxonomy_node_id: node.id).pluck(:id)
       node.destroy!
       Restriction.where(id: pointing).find_each(&:re_resolve!)
@@ -103,9 +105,12 @@ class CustomItem
   # precedence rule applies unchanged and each change bumps that profile.
   def update_marks(choices)
     choices = choices.to_h.transform_keys(&:to_s)
-    existing = mark_restrictions.group_by(&:patient_id)
 
     Restriction.transaction do
+      lock_patients!
+      # Read only once the patients are locked, so a checklist save that just
+      # removed a mark can't leave a stale copy that looks already in place.
+      existing = mark_restrictions.group_by(&:patient_id)
       user.patients.find_each do |patient|
         wanted = choices[patient.id.to_s].presence_in(MARKS)
         current, *extra = existing.fetch(patient.id, [])
@@ -177,6 +182,13 @@ class CustomItem
   def refresh_restrictions!(previous_matches)
     user.restrictions.where(match_type: "unresolved").or(previous_matches).find_each(&:re_resolve!)
     bump_patients!
+  end
+
+  # Restriction writers lock the patient rows first, in id order, before any
+  # restriction row (as RestrictionSelection and RestrictionsController do),
+  # so two writers can never wait on each other's locks.
+  def lock_patients!
+    user.patients.order(:id).lock.ids
   end
 
   def bump_patients!
