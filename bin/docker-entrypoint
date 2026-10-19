@@ -6,6 +6,13 @@
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
   ./bin/rails db:seed
+
+  # One-off USDA food import: set USDA_IMPORT=1, deploy once, then remove it.
+  # Runs beside the server so the health check isn't held up; re-running is
+  # safe (rows are upserted by fdc_id).
+  if [ "${USDA_IMPORT}" == "1" ]; then
+    (./bin/rails usda:fetch_import || echo "USDA import failed (see above)") &
+  fi
 fi
 
 exec "${@}"

@@ -25,3 +25,16 @@ from NURSE_PASSWORD". Sign in with the new password, then delete
 
 In development, `bin/rails db:seed` creates `nurse@example.com` with the password
 `change-me-please`.
+
+## USDA foods
+
+Food search uses USDA FoodData Central's Foundation Foods and SR Legacy
+datasets. These come from USDA's bulk CSV downloads, not their API.
+
+- **Locally:** unzip the two CSV downloads into `db/usda/` and run
+  `bin/rails usda:import`.
+- **On the server:** set `USDA_IMPORT=1` on the web service and deploy once. The
+  server downloads the newest files from fdc.nal.usda.gov and imports them in
+  the background. The deploy log ends with "USDA import finished: N foods on
+  file". Then remove `USDA_IMPORT`. Running it again is safe and just
+  refreshes the rows.
