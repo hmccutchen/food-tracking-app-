@@ -1,6 +1,14 @@
 /* Suggest meals: requests, meal cards, dropped meals. Tier is always in words. */
 @layer features {
-  .recent-meals > h2 { margin-block-start: 0; }
+  .recent-meals-header {
+    align-items: center;
+    display: flex;
+    gap: var(--space-3);
+    justify-content: space-between;
+    margin-block-end: var(--space-3);
+  }
+  .recent-meals-header h2 { margin: 0; }
+  .recent-meals:not(:has(.meal-request)) .clear-meal-requests { display: none; }
   #recent_meal_requests_frame { display: block; }
 
   .meal-request {
@@ -14,6 +22,9 @@
   }
   .meal-request-header { margin-block-end: var(--space-3); }
   .meal-request-header h3 { margin: 0 0 var(--space-1); }
+  .meal-request-title { align-items: start; display: flex; gap: var(--space-3); justify-content: space-between; }
+  .meal-request-title .btn, .recent-meals-header .btn { flex: none; white-space: nowrap; }
+  .remove-meal-request { margin: 0; }
   .meal-request-meta { color: var(--text-muted); font-size: var(--text-sm); margin: 0; }
 
   .meal-request-stale {

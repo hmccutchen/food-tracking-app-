@@ -10,7 +10,7 @@ RSpec.describe "Custom items (not-found path)", js: true do
     expect(page).to have_content("Signed in as")
 
     visit group_path(patient_ids: [ ana.id ])
-    fill_in "Ingredients (one per line, or separated by commas)", with: "Mrs. P's soup"
+    fill_in "Ingredients", with: "Mrs. P's soup"
     click_button "Check"
     within("#evaluation_result") do
       expect(page).to have_css('.tier-badge[data-tier="unknown"]')
@@ -30,7 +30,7 @@ RSpec.describe "Custom items (not-found path)", js: true do
     expect(page).to have_content("Saved who can and cannot have it.")
 
     visit group_path(patient_ids: [ ana.id ])
-    fill_in "Ingredients (one per line, or separated by commas)", with: "Mrs. P's soup"
+    fill_in "Ingredients", with: "Mrs. P's soup"
     click_button "Check"
     within("#evaluation_result") do
       expect(page).to have_css('.tier-badge[data-tier="conflict"]', text: "Conflict")

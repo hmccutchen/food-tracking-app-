@@ -15,8 +15,9 @@ Rails.application.routes.draw do
   resource :group, only: :show do
     post :check
   end
-  resources :meal_requests, path: "meal-requests", only: %i[index create show] do
+  resources :meal_requests, path: "meal-requests", only: %i[index create show destroy] do
     post :recheck, on: :member
+    delete :clear, on: :collection
   end
   namespace :settings do
     resource :ai, only: %i[show update], controller: "ai"

@@ -6,18 +6,21 @@
     <%= form.label :name, "Name" %>
     <%= form.text_field :name, required: true, autocomplete: "off" %>
   </div>
-  <div class="field">
+  <div class="field" data-controller="tags" data-tags-brackets-value="true">
     <%= form.label :ingredients_text, "Ingredients (optional, as on the label)" %>
-    <%= form.text_area :ingredients_text, rows: 3, placeholder: "e.g. contains wheat flour, milk" %>
+    <%= form.text_area :ingredients_text, rows: 3, placeholder: "e.g. wheat flour, milk",
+          aria: { describedby: "custom_item_ingredients_help" } %>
+    <small id="custom_item_ingredients_help">Press Enter or type a comma after each one. You can paste the whole label.</small>
   </div>
   <div class="field">
     <%= form.label :parent_id, "This is a kind of… (optional)" %>
     <%= form.collection_select :parent_id, CustomItem.parent_options(item.user, except: item.node), :id, :name,
           { include_blank: "Nothing in the list" } %>
   </div>
-  <div class="field">
-    <%= form.label :aliases_text, "Other names (optional, separated by commas)" %>
-    <%= form.text_field :aliases_text, autocomplete: "off" %>
+  <div class="field" data-controller="tags">
+    <%= form.label :aliases_text, "Other names (optional)" %>
+    <%= form.text_field :aliases_text, autocomplete: "off", aria: { describedby: "custom_item_aliases_help" } %>
+    <small id="custom_item_aliases_help">Press Enter or type a comma after each one.</small>
   </div>
   <div class="actions">
     <%= form.submit item.persisted? ? "Save custom item" : "Add custom item" %>
