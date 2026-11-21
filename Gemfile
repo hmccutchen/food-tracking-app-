@@ -35,7 +35,7 @@ gem "bootsnap", require: false
 gem "image_processing", "~> 1.2"
 
 # One client for Gemini, Anthropic and OpenAI, wrapped by Ai::Adapters (see docs/PLAN.md).
-gem "ruby_llm", "~> 2.1"
+gem "ruby_llm", "~> 2.2"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
